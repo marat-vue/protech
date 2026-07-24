@@ -31,19 +31,10 @@ function getSmtpSecure(port: number) {
   return port === 465;
 }
 
-function getFromAddress(user: string) {
-  const from = process.env.YANDEX_SMTP_FROM?.trim();
+function getFromAddress() {
+  const from = process.env.YANDEX_SMTP_FROM?.trim().replaceAll("\\", "\\\\").replaceAll("\"", "\\\"");
 
-  if (!from) {
-    return user;
-  }
-
-  if (from.includes("@") || from.includes("<")) {
-    return from;
-  }
-
-  const escapedName = from.replaceAll("\\", "\\\\").replaceAll("\"", "\\\"");
-  return `"${escapedName}" <noreply>`;
+  return `"${from}" <noreply@yandex.com>`;
 }
 
 function getYandexMailConfig() {
@@ -58,7 +49,7 @@ function getYandexMailConfig() {
   const timeout = getSmtpTimeout();
 
   return {
-    from: getFromAddress(user),
+    from: getFromAddress(),
     host: process.env.YANDEX_SMTP_HOST || "smtp.yandex.ru",
     pass,
     port,

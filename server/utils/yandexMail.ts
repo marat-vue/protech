@@ -43,7 +43,7 @@ function getFromAddress(user: string) {
   }
 
   const escapedName = from.replaceAll("\\", "\\\\").replaceAll("\"", "\\\"");
-  return `"${escapedName}" <${user}>`;
+  return `"${escapedName}"`;
 }
 
 function getYandexMailConfig() {

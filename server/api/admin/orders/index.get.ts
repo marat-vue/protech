@@ -9,7 +9,7 @@ export default defineEventHandler(async (event) => {
   const query = getQuery(event);
   const page = getPageQueryParam(query.page);
   const status = query.status ? String(query.status) : undefined;
-  const limit = 20;
+  const limit = 10;
 
   if (status && !orderStatuses.has(status)) {
     throw createError({

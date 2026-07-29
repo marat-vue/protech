@@ -9,8 +9,10 @@
       </UButton>
     </div>
 
-    <div class="grid items-start gap-6 lg:grid-cols-[360px_minmax(0,1fr)]">
-      <aside class="rounded-4xl bg-[#f9fafb] p-6 shadow-sm shadow-zinc-950/5 lg:sticky lg:top-8 lg:h-90 lg:self-start">
+    <div class="grid items-start gap-6" :class="hasReviews ? 'lg:grid-cols-[360px_minmax(0,1fr)]' : 'grid-cols-1'">
+      <aside class="rounded-4xl bg-[#f9fafb] p-6 shadow-sm shadow-zinc-950/5"
+        :class="hasReviews ? 'lg:sticky lg:top-8 lg:h-90 lg:self-start' : 'min-h-72 sm:p-8 lg:min-h-80'"
+      >
         <div v-if="hasReviews">
           <div class="flex items-end justify-between gap-4">
             <div>
@@ -39,20 +41,20 @@
             </div>
           </div>
         </div>
-        <div v-else class="flex h-full min-h-48 flex-col justify-center">
+        <div v-else class="flex h-full min-h-48 flex-col items-center justify-center text-center">
           <div class="grid size-12 place-items-center rounded-full bg-white text-zinc-400 shadow-sm shadow-zinc-950/5">
             <UIcon name="i-lucide-message-circle"
               class="size-6"
             />
           </div>
           <p class="mt-5 text-lg font-semibold text-zinc-950">Нет отзывов</p>
-          <p class="mt-2 text-sm leading-6 text-zinc-500">
+          <p class="mt-2 max-w-md text-sm leading-6 text-zinc-500">
             Оценка появится после первого отзыва о товаре.
           </p>
         </div>
       </aside>
 
-      <div class="space-y-5">
+      <div v-if="hasReviews || reviewFormOpen" class="space-y-5">
         <div v-if="hasReviews" class="rounded-4xl bg-white/60 p-3 shadow-sm shadow-zinc-950/5  ">
           <div class="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
             <div v-auto-animate class="flex flex-wrap gap-2">

@@ -60,17 +60,30 @@
         </div>
         <div class="grid gap-3 lg:grid-cols-2">
           <UFormField label="Характеристика">
-            <USelect :model-value="attribute.attributeId"
+            <USelectMenu :model-value="attribute.attributeId"
               class="w-full rounded-2xl bg-white shadow-sm shadow-zinc-950/5"
               size="xl"
               color="neutral"
               variant="none"
               :content="selectContent"
               :items="attributeItems"
+              value-key="value"
+              label-key="label"
+              :filter-fields="['label']"
+              :search-input="{ placeholder: 'Поиск характеристики' }"
               placeholder="Выберите характеристику"
               :ui="selectUi"
               @update:model-value="emit('select', index, $event)"
-            />
+            >
+              <template #leading>
+                <Search class="size-4 text-zinc-400" />
+              </template>
+              <template #empty>
+                <span class="block px-3 py-6 text-center text-sm text-zinc-500">
+                  Характеристики не найдены
+                </span>
+              </template>
+            </USelectMenu>
           </UFormField>
           <UFormField label="Значение">
             <UInput :model-value="attribute.value"
@@ -95,7 +108,7 @@
 </template>
 
 <script setup lang="ts">
-import { Plus, Trash2 } from "@lucide/vue";
+import { Plus, Search, Trash2 } from "@lucide/vue";
 import type { ProductFormState } from "~~/app/shared/types/admin";
 
 type SelectValue = number | string | null | undefined;
@@ -116,15 +129,16 @@ const inputUi = {
   base: "h-12 rounded-2xl bg-transparent font-medium text-zinc-900"
 };
 const selectContent = {
-  bodyLock: false,
+  side: "bottom" as const,
+  align: "start" as const,
+  sideOffset: 8,
   collisionPadding: 12
 };
 const selectUi = {
-  base: "h-12 rounded-2xl bg-transparent font-medium text-zinc-900",
+  base: "min-h-12 rounded-2xl bg-transparent font-medium text-zinc-900",
   content: "max-w-[min(30rem,calc(100vw-1rem))] rounded-2xl bg-white shadow-xl shadow-zinc-950/10 ring-0",
   item: "rounded-xl",
   itemLabel: "truncate",
-  value: "truncate",
   viewport: "max-h-72 p-1"
 };
 

@@ -13,6 +13,14 @@ export type Category = {
   name: string;
 };
 
+export type ProductCollection = {
+  id: number;
+  title: string;
+  description: string;
+  image: string;
+  productsCount: number;
+};
+
 export type ProductCardItem = {
   id: number;
   name: string;

@@ -224,7 +224,7 @@
           size="lg"
           type="submit"
           form="product-media-editor-form"
-          class="min-h-12 justify-center rounded-full px-6 shadow-lg shadow-emerald-950/10"
+          class="min-h-12 justify-center rounded-full px-6 shadow-lg shadow-orange-950/10"
           :loading="submitting"
         >
           <Save class="size-4" />

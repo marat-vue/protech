@@ -11,7 +11,7 @@
                 <img src="/logo.png" alt="Логотип ПроТех76" class="size-full object-contain">
               </span>
               <div>
-                <p class="text-xl font-semibold tracking-normal">ПроТех76</p>
+                <p class="brand-wordmark text-xl font-semibold tracking-normal">ПроТех76</p>
                 <p class="text-sm text-white/60">Запчасти и навесное оборудование</p>
               </div>
             </div>
@@ -42,7 +42,7 @@
                 <img src="/logo.png" alt="Логотип ПроТех76" class="size-full object-contain">
               </span>
               <div>
-                <p class="font-semibold text-zinc-950">ПроТех76</p>
+                <p class="brand-wordmark font-semibold text-zinc-950">ПроТех76</p>
               </div>
             </div>
             <p class="mt-5 text-sm text-zinc-500">

@@ -13,6 +13,9 @@
       <UBadge v-if="selectedCategoryName" color="neutral" variant="soft" class="rounded-full px-3 py-1">
         {{ selectedCategoryName }}
       </UBadge>
+      <UBadge v-if="selectedCollectionTitle" color="primary" variant="soft" class="rounded-full px-3 py-1">
+        {{ selectedCollectionTitle }}
+      </UBadge>
       <UBadge v-if="discountOnly" color="error" variant="soft" class="rounded-full px-3 py-1">
         Скидка
       </UBadge>
@@ -43,6 +46,7 @@ defineProps<{
   priceMin: number;
   selectedAttributeLabels: ProductCatalogAttributeLabel[];
   selectedCategoryName: string;
+  selectedCollectionTitle: string;
   statusText: string;
 }>();
 

@@ -19,7 +19,7 @@
           <img src="/logo.png" alt="Логотип ПроТех76" class="size-full object-contain">
         </span>
         <span v-if="!collapsed" class="min-w-0 leading-tight">
-          <span class="block truncate text-base font-semibold tracking-normal text-(--admin-text)">
+          <span class="brand-wordmark block truncate text-base font-semibold tracking-normal text-(--admin-text)">
             ПроТех76
           </span>
           <span class="block truncate text-[0.7rem] uppercase text-(--admin-text-muted)">
@@ -130,6 +130,7 @@ import {
   Layers3,
   MessageSquareText,
   MessagesSquare,
+  Images,
   PackageSearch,
   PanelLeftClose,
   Store,
@@ -162,6 +163,7 @@ const navGroups = [
     label: "Каталог",
     items: [
       { label: "Товары", to: "/admin/products", icon: PackageSearch },
+      { label: "Рубрики", to: "/admin/collections", icon: Images },
       { label: "Остатки", to: "/admin/stock", icon: Warehouse },
       { label: "Справочники", to: "/admin/catalog", icon: Layers3 }
     ]

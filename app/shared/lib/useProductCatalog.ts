@@ -11,6 +11,7 @@ import type {
   AttributeFilter,
   Category,
   ProductCardItem,
+  ProductCollection,
   ProductCatalogResponse,
   ProductPriceRange
 } from "~~/app/shared/types/shop";
@@ -62,9 +63,15 @@ export async function useProductCatalog() {
     () => shopFetch<Category[]>("/api/public/product/categories", catalogFetchOptions),
     { default: () => [] }
   );
+  const collectionsAsyncData = useAsyncData(
+    "shop-product-collections",
+    () => shopFetch<ProductCollection[]>("/api/public/collections", catalogFetchOptions),
+    { default: () => [] }
+  );
 
   const attributeQuery = computed(() => buildQuery({
-    categoryId: ui.catalog.categoryId
+    categoryId: ui.catalog.categoryId,
+    collectionId: ui.catalog.collectionId
   }));
 
   const attributesAsyncData = useAsyncData(
@@ -79,6 +86,7 @@ export async function useProductCatalog() {
   const priceRangeQuery = computed(() => buildQuery({
     search: debouncedSearch.value,
     categoryId: ui.catalog.categoryId,
+    collectionId: ui.catalog.collectionId,
     discountOnly: ui.catalog.discountOnly ? 1 : null,
     inStockOnly: ui.catalog.inStockOnly ? 1 : null,
     attributes: attributeSelectionKey.value === "[]" ? null : attributeSelectionKey.value
@@ -92,10 +100,12 @@ export async function useProductCatalog() {
     }
   );
   const { data: categoriesData } = categoriesAsyncData;
+  const { data: collectionsData } = collectionsAsyncData;
   const { data: attributesData, pending: attributesPending } = attributesAsyncData;
   const { data: priceRangeData, pending: priceRangePending } = priceRangeAsyncData;
 
   const categories = computed(() => categoriesData.value ?? []);
+  const collections = computed(() => collectionsData.value ?? []);
   const attributes = computed(() => attributesData.value ?? []);
   const categoryItems = computed(() => [
     { id: null, name: "Все категории" },
@@ -103,6 +113,9 @@ export async function useProductCatalog() {
   ]);
   const selectedCategoryName = computed(() =>
     categories.value.find((category) => category.id === ui.catalog.categoryId)?.name ?? ""
+  );
+  const selectedCollectionTitle = computed(() =>
+    collections.value.find((collection) => collection.id === ui.catalog.collectionId)?.title ?? ""
   );
   const priceRangeMin = computed(() => Math.floor(Math.min(
     priceRangeData.value?.minPrice ?? 0,
@@ -146,6 +159,7 @@ export async function useProductCatalog() {
     ui.catalog.categoryId ||
     ui.catalog.discountOnly ||
     ui.catalog.inStockOnly ||
+    ui.catalog.collectionId ||
     isPriceFiltered.value ||
     ui.catalog.attributes.length ||
     ui.catalog.sort !== "newest"
@@ -176,6 +190,7 @@ export async function useProductCatalog() {
   });
   const filterSignature = computed(() => JSON.stringify({
     search: debouncedSearch.value,
+    collectionId: ui.catalog.collectionId,
     categoryId: ui.catalog.categoryId,
     sort: ui.catalog.sort,
     minPrice: ui.catalog.minPrice,
@@ -225,6 +240,7 @@ export async function useProductCatalog() {
     return buildQuery({
       page: pageNumber,
       search: debouncedSearch.value,
+      collectionId: ui.catalog.collectionId,
       categoryId: ui.catalog.categoryId,
       sort: ui.catalog.sort,
       minPrice: ui.catalog.minPrice,
@@ -288,6 +304,10 @@ export async function useProductCatalog() {
 
   function clearAllFilters() {
     ui.resetCatalogFilters();
+  }
+
+  function selectCollection(collectionId: number | null) {
+    ui.catalog.collectionId = collectionId;
   }
 
   function isAttributeSelected(attributeId: number, value: string) {
@@ -401,6 +421,7 @@ export async function useProductCatalog() {
     categoryItems,
     clearAllFilters,
     closeFilters,
+    collections,
     error,
     favorites,
     filtersOpen,
@@ -420,8 +441,10 @@ export async function useProductCatalog() {
     products,
     productCatalogSortOptions,
     reachedEnd,
+    selectCollection,
     selectedAttributeLabels,
     selectedCategoryName,
+    selectedCollectionTitle,
     setMaxPrice,
     setMinPrice,
     toggleAttribute,

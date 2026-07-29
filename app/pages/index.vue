@@ -3,6 +3,9 @@
     <div class="mx-auto w-full max-w-370 px-1 py-8 sm:px-6 lg:px-8 lg:py-10">
       <ProductCatalogHero :cart-total="cart.totalItems" />
 
+      <ProductCollectionSpotlight :collections="collections" :selected-collection-id="ui.catalog.collectionId"
+        @select="selectCollection" />
+
       <ProductCatalogToolbar v-model:search="ui.catalog.search" v-model:category-id="ui.catalog.categoryId"
         v-model:sort="ui.catalog.sort" v-model:discount-only="ui.catalog.discountOnly"
         v-model:in-stock-only="ui.catalog.inStockOnly" :active-filter-count="activeDrawerFilterCount"
@@ -11,7 +14,8 @@
       <ProductCatalogActiveFilters :discount-only="ui.catalog.discountOnly" :has-any-filter="hasAnyFilter"
         :in-stock-only="ui.catalog.inStockOnly" :is-price-filtered="isPriceFiltered" :price-max="priceMax"
         :price-min="priceMin" :selected-attribute-labels="selectedAttributeLabels"
-        :selected-category-name="selectedCategoryName" :status-text="catalogStatusText" @clear="clearAllFilters" />
+        :selected-category-name="selectedCategoryName" :selected-collection-title="selectedCollectionTitle"
+        :status-text="catalogStatusText" @clear="clearAllFilters" />
 
       <UAlert v-if="error" color="error" variant="soft" icon="i-lucide-alert-circle" title="Не удалось загрузить товары"
         :description="getErrorMessage(error)" class="mt-6 rounded-3xl" />
@@ -67,6 +71,7 @@ const {
   catalogStatusText,
   categoryItems,
   clearAllFilters,
+  collections,
   error,
   favorites,
   filtersOpen,
@@ -85,8 +90,10 @@ const {
   products,
   productCatalogSortOptions,
   reachedEnd,
+  selectCollection,
   selectedAttributeLabels,
   selectedCategoryName,
+  selectedCollectionTitle,
   setMaxPrice,
   setMinPrice,
   toggleAttribute,

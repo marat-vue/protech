@@ -33,9 +33,43 @@ model Product {
     reviews           Review[]
     orderItems        OrderItem[]
     stockMovements    StockMovement[]
+    collectionItems   ProductCollectionItem[]
 
     @@index([categoryId, isActive])
     @@map("product")
+}
+
+model ProductCollection {
+    id          Int     @id @default(autoincrement())
+    title       String
+    description String
+    image       String
+    isActive    Boolean @default(true) @map("is_active")
+    sortOrder   Int     @default(0) @map("sort_order")
+
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    productCollectionItems ProductCollectionItem[]
+
+    @@index([isActive, sortOrder])
+    @@map("product_collection")
+}
+
+model ProductCollectionItem {
+    id           Int               @id @default(autoincrement())
+    collectionId Int               @map("collection_id")
+    collection   ProductCollection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+    productId    Int               @map("product_id")
+    product      Product           @relation(fields: [productId], references: [id], onDelete: Cascade)
+    sortOrder    Int               @default(0) @map("sort_order")
+
+    createdAt DateTime @default(now()) @map("created_at")
+
+    @@unique([collectionId, productId])
+    @@index([collectionId, sortOrder])
+    @@index([productId])
+    @@map("product_collection_item")
 }
 
 model ProductImage {

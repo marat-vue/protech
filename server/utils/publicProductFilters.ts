@@ -13,6 +13,7 @@ export interface PublicProductFilterQuery {
   minPrice?: PublicProductQueryValue;
   maxPrice?: PublicProductQueryValue;
   categoryId?: PublicProductQueryValue;
+  collectionId?: PublicProductQueryValue;
   discountOnly?: PublicProductQueryValue;
   inStockOnly?: PublicProductQueryValue;
   attributes?: PublicProductQueryValue;
@@ -94,6 +95,7 @@ export function buildPublicProductWhere(
   const minPrice = toFiniteNumber(query.minPrice);
   const maxPrice = toFiniteNumber(query.maxPrice);
   const categoryId = toPositiveInteger(query.categoryId);
+  const collectionId = toPositiveInteger(query.collectionId);
   const discountOnly = ["1", "true"].includes(getPublicProductQueryValue(query.discountOnly) ?? "");
   const inStockOnly = ["1", "true"].includes(getPublicProductQueryValue(query.inStockOnly) ?? "");
   const attributes = parseAttributes(query.attributes);
@@ -161,6 +163,19 @@ export function buildPublicProductWhere(
     ...(categoryId !== undefined
       ? {
         categoryId
+      }
+      : {}),
+
+    ...(collectionId !== undefined
+      ? {
+        collectionItems: {
+          some: {
+            collectionId,
+            collection: {
+              isActive: true
+            }
+          }
+        }
       }
       : {}),
 

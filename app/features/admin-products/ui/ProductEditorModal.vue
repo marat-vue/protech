@@ -4,13 +4,13 @@
   >
     <template #header>
       <div class="flex min-w-0 items-start gap-4">
-        <div class="grid size-12 shrink-0 place-items-center rounded-2xl bg-emerald-600 text-white shadow-lg shadow-emerald-950/15">
+        <div class="grid size-12 shrink-0 place-items-center rounded-2xl bg-(--admin-accent) text-white shadow-lg shadow-orange-950/15">
           <UIcon name="i-lucide-package-plus"
             class="size-6"
           />
         </div>
         <div class="min-w-0">
-          <p class="text-xs font-semibold uppercase text-emerald-700">
+          <p class="text-xs font-semibold uppercase text-(--admin-accent-strong)">
             Каталог
           </p>
           <h2 class="mt-1 truncate text-xl font-semibold tracking-normal text-zinc-950 sm:text-2xl">
@@ -40,7 +40,7 @@
       >
         <section class="rounded-3xl bg-white p-4 shadow-sm shadow-zinc-950/5 ring-1 ring-zinc-200/70 sm:p-5">
           <div class="flex items-start gap-3">
-            <span class="grid size-10 shrink-0 place-items-center rounded-2xl bg-emerald-50 text-emerald-700">
+            <span class="grid size-10 shrink-0 place-items-center rounded-2xl bg-(--admin-accent-soft) text-(--admin-accent-strong)">
               <UIcon name="i-lucide-file-pen-line"
                 class="size-5"
               />
@@ -102,7 +102,7 @@
           size="lg"
           type="submit"
           form="product-editor-form"
-          class="min-h-12 justify-center rounded-full px-6 shadow-lg shadow-emerald-950/10"
+          class="min-h-12 justify-center rounded-full px-6 shadow-lg shadow-orange-950/10"
           :loading="submitting"
         >
           <Save class="size-4" />

@@ -16,7 +16,7 @@
               <p class="truncate text-base font-semibold tracking-normal text-zinc-950 sm:text-lg">
                 {{ currentTitle }}
               </p>
-              <span class="hidden rounded-full bg-[#f9fafb] px-2.5 py-1 text-[0.68rem] font-semibold uppercase text-zinc-400 md:inline-flex">
+              <span class="brand-wordmark hidden rounded-full bg-[#f9fafb] px-2.5 py-1 text-[0.68rem] font-semibold uppercase text-zinc-400 md:inline-flex">
                 ПроТех76
               </span>
             </div>
@@ -73,6 +73,7 @@ import {
   Layers3,
   MessageSquareText,
   MessagesSquare,
+  Images,
   PackageSearch,
   Users,
   Warehouse
@@ -102,6 +103,11 @@ const pageMeta = {
     icon: PackageSearch,
     title: "Товары",
     subtitle: "Карточки, цены, медиа и видимость"
+  },
+  "/admin/collections": {
+    icon: Images,
+    title: "Рубрики",
+    subtitle: "Промо-блоки и подборки для публичного каталога"
   },
   "/admin/stock": {
     icon: Warehouse,

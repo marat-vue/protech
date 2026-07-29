@@ -1,6 +1,6 @@
 <template>
-  <section aria-label="Фильтры каталога" role="search" class="rounded-4xl bg-[#f9fafb]/90 p-2 shadow-[0_18px_60px_rgba(24,24,27,0.06)] backdrop-blur  ">
-    <div class="grid gap-3 lg:grid-cols-[minmax(280px,1fr)_minmax(210px,260px)_auto] lg:items-center">
+  <section aria-label="Фильтры каталога" role="search" class="rounded-4xl bg-[#f9fafb]/90 p-2 shadow-[0_18px_60px_rgba(24,24,27,0.06)] backdrop-blur">
+    <div class="grid gap-3 md:grid-cols-[minmax(260px,1fr)_minmax(220px,280px)] xl:grid-cols-[minmax(280px,1fr)_minmax(210px,260px)_auto] xl:items-center">
       <UInput v-model="search" icon="i-lucide-search" variant="none" size="lg"
         placeholder="Найти товар, бренд или описание" class="w-full rounded-full bg-white shadow-sm shadow-zinc-950/5 "
         aria-label="Поиск по каталогу"
@@ -13,11 +13,11 @@
         :aria-label="categoryAriaLabel"
         class="min-w-0 rounded-full bg-white px-1 shadow-sm shadow-zinc-950/5 " :ui="selectUi" />
 
-      <div class="grid grid-cols-2 gap-2 lg:flex lg:flex-wrap lg:items-stretch lg:justify-end">
+      <div class="grid min-w-0 grid-cols-2 gap-2 md:col-span-2 md:grid-cols-[minmax(180px,220px)_repeat(3,minmax(130px,1fr))] xl:col-span-1 xl:flex xl:flex-nowrap xl:items-stretch xl:justify-end">
         <USelectMenu v-model="sort" :items="sortOptions" value-key="value" label-key="label" :search-input="false"
           color="neutral" variant="none" size="lg" icon="i-lucide-arrow-up-down"
           :aria-label="sortAriaLabel"
-          class="col-span-2 w-full rounded-full bg-white px-1 shadow-sm shadow-zinc-950/5 lg:w-48 lg:shrink-0 "
+          class="col-span-2 w-full rounded-full bg-white px-1 shadow-sm shadow-zinc-950/5 md:col-span-1 xl:w-48 xl:shrink-0"
           :ui="sortUi" />
 
         <div
@@ -37,7 +37,7 @@
         </div>
 
         <UButton color="neutral" variant="ghost" size="lg" icon="i-lucide-sliders-horizontal"
-          class="col-span-2 h-12 w-full justify-center rounded-full bg-white px-4 shadow-sm shadow-zinc-950/5 hover:bg-zinc-100 lg:w-auto"
+          class="col-span-2 h-12 w-full justify-center rounded-full bg-white px-4 shadow-sm shadow-zinc-950/5 hover:bg-zinc-100 md:col-span-1 xl:w-auto"
           @click="$emit('openFilters')">
           Прочее
           <span v-if="activeFilterCount"

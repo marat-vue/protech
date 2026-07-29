@@ -1,7 +1,7 @@
 <template>
   <UModal v-model:open="open" :title="modalTitle" :ui="modalUi">
     <template #body>
-      <div v-if="order" class="bg-[#f8faf9] pb-2">
+      <div v-if="order" class="bg-[#f6f7f8] pb-2">
         <div class="max-h-[calc(92dvh-4rem)] overflow-y-auto overscroll-contain">
           <OrderDetailsHeader :order="order" :order-total="orderTotal" />
 
@@ -153,7 +153,7 @@ const currentState = computed(() => {
   };
 
   return {
-    class: "bg-emerald-50 text-emerald-700  ",
+    class: "bg-orange-50 text-orange-700  ",
     ...states[order.value.orderStatus]
   };
 });

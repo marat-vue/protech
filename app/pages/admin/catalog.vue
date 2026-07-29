@@ -27,7 +27,7 @@
               </p>
             </div>
             <UButton color="primary" icon="i-lucide-plus" size="lg"
-              class="h-11 rounded-full px-4 shadow-lg shadow-emerald-950/10"
+              class="h-11 rounded-full px-4 shadow-lg shadow-orange-950/10"
               @click="openCategoryForm()">
               Добавить
             </UButton>
@@ -87,7 +87,7 @@
               </p>
             </div>
             <UButton color="primary" icon="i-lucide-plus" size="lg"
-              class="h-11 rounded-full px-4 shadow-lg shadow-emerald-950/10"
+              class="h-11 rounded-full px-4 shadow-lg shadow-orange-950/10"
               @click="openAttributeForm()">
               Добавить
             </UButton>

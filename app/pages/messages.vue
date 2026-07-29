@@ -24,7 +24,7 @@
         </div>
       </header>
 
-      <div ref="messagesViewport" class="min-h-0 flex-1 overflow-y-auto bg-[#f8faf9] px-3 py-4 sm:px-4"
+      <div ref="messagesViewport" class="min-h-0 flex-1 overflow-y-auto bg-[#f6f7f8] px-3 py-4 sm:px-4"
         role="log" aria-live="polite" aria-relevant="additions text">
         <div v-if="loading" class="space-y-3">
           <USkeleton v-for="item in 5" :key="item" class="h-14 rounded-lg" />

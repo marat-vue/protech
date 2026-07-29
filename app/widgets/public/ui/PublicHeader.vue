@@ -12,7 +12,7 @@
           </span>
 
           <span class="min-w-0 leading-tight">
-            <span class="block truncate text-base font-semibold tracking-normal text-zinc-950 sm:text-lg">
+            <span class="brand-wordmark block truncate text-base font-semibold tracking-normal text-zinc-950 sm:text-lg">
               ПроТех76
             </span>
 
@@ -99,7 +99,7 @@
                 <img src="/logo.png" alt="Логотип ПроТех76" class="size-full object-contain">
               </span>
               <span>
-                <span id="mobile-menu-title" class="block font-semibold text-zinc-950">ПроТех76</span>
+                <span id="mobile-menu-title" class="brand-wordmark block font-semibold text-zinc-950">ПроТех76</span>
                 <span class="block text-xs text-zinc-500">Магазин запчастей и навесного оборудования</span>
               </span>
             </NuxtLink>

@@ -42,10 +42,13 @@ export default defineNuxtConfig({
       },
       link: [
         { rel: "icon", href: "/favicon.ico", sizes: "any" },
-        { rel: "apple-touch-icon", href: "/logo.png" }
+        { rel: "apple-touch-icon", href: "/logo.png" },
+        { rel: "preconnect", href: "https://fonts.googleapis.com" },
+        { rel: "preconnect", href: "https://fonts.gstatic.com", crossorigin: "" },
+        { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700;800&family=Tektur:wght@500;600;700;800;900&display=swap" }
       ],
       meta: [
-        { name: "theme-color", content: "#166534" },
+        { name: "theme-color", content: "#f97316" },
         { name: "format-detection", content: "telephone=no" }
       ]
     }

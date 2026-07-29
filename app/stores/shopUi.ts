@@ -7,6 +7,7 @@ export const useShopUiStore = defineStore("shop-ui", {
   state: () => ({
     catalog: {
       search: "",
+      collectionId: null as number | null,
       categoryId: null as number | null,
       sort: "newest" as "newest" | "price_asc" | "price_desc" | "oldest",
       minPrice: null as number | null,
@@ -19,6 +20,7 @@ export const useShopUiStore = defineStore("shop-ui", {
   actions: {
     resetCatalogFilters() {
       this.catalog.search = "";
+      this.catalog.collectionId = null;
       this.catalog.categoryId = null;
       this.catalog.sort = "newest";
       this.catalog.minPrice = null;

@@ -1,5 +1,6 @@
 interface AttributeQuery {
   categoryId?: string;
+  collectionId?: string;
 }
 
 export default defineEventHandler(async (event) => {
@@ -8,10 +9,26 @@ export default defineEventHandler(async (event) => {
   const categoryId = Number.isInteger(parsedCategoryId) && parsedCategoryId > 0
     ? parsedCategoryId
     : undefined;
+  const parsedCollectionId = Number(query.collectionId);
+  const collectionId = Number.isInteger(parsedCollectionId) && parsedCollectionId > 0
+    ? parsedCollectionId
+    : undefined;
 
   const productWhere = {
     isActive: true,
-    ...(categoryId ? { categoryId } : {})
+    ...(categoryId ? { categoryId } : {}),
+    ...(collectionId
+      ? {
+        collectionItems: {
+          some: {
+            collectionId,
+            collection: {
+              isActive: true
+            }
+          }
+        }
+      }
+      : {})
   };
 
   const attributes = await prisma.attribute.findMany({

@@ -78,6 +78,30 @@ export type ProductListItem = {
   productStocks: Array<{ quantity: number }>;
 };
 
+export type ProductCollectionListItem = {
+  id: number;
+  title: string;
+  description: string;
+  image: string;
+  isActive: boolean;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+  _count: {
+    productCollectionItems: number;
+  };
+};
+
+export type ProductCollectionDetails = {
+  id: number;
+  title: string;
+  description: string;
+  image: string;
+  isActive: boolean;
+  sortOrder: number;
+  products: ProductListItem[];
+};
+
 export type ProductDetails = {
   id: number;
   name: string;

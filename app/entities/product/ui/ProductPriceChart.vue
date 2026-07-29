@@ -148,7 +148,7 @@
 import { formatCurrency, toNumber } from "~~/app/shared/lib/shopFormatters";
 import type { MoneyLike } from "~~/app/shared/types/shop";
 
-type TrendColor = "neutral" | "success" | "error";
+type TrendColor = "neutral" | "primary" | "error";
 
 const props = defineProps<{
   prices: Array<{
@@ -191,10 +191,10 @@ const trendMeta = computed<{
 
   if (changeAmount.value < 0) {
     return {
-      color: "success",
+      color: "primary",
       label: "Цена снизилась",
-      stroke: "#10b981",
-      textClass: "text-emerald-600"
+      stroke: "#f97316",
+      textClass: "text-[var(--shop-accent-strong)]"
     };
   }
 

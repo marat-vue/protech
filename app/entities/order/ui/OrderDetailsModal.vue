@@ -153,7 +153,7 @@ const currentState = computed(() => {
   };
 
   return {
-    class: "bg-orange-50 text-orange-700  ",
+    class: "bg-yellow-50 text-yellow-700  ",
     ...states[order.value.orderStatus]
   };
 });

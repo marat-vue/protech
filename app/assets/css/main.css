@@ -5,10 +5,10 @@
   --font-body: "IBM Plex Sans", "Segoe UI", Arial, sans-serif;
   --font-display: "Tektur", "Arial Black", "Impact", sans-serif;
 
-  --shop-accent: #f97316;
-  --shop-accent-soft: #fff7ed;
-  --shop-accent-muted: #fed7aa;
-  --shop-accent-strong: #c2410c;
+  --shop-accent: #facc15;
+  --shop-accent-soft: #fefce8;
+  --shop-accent-muted: #fef08a;
+  --shop-accent-strong: #a16207;
   --shop-surface: #ffffff;
   --shop-surface-muted: #f6f7f8;
   --shop-surface-elevated: #ffffff;
@@ -17,39 +17,39 @@
   --shop-text-muted: #71717a;
   --shop-text-subtle: #a1a1aa;
   --shop-danger: #dc2626;
-  --shop-warning: #d97706;
+  --shop-warning: #ca8a04;
   --shop-info: #0284c7;
-  --shop-success: #f97316;
-  --shop-ring: #fdba74;
+  --shop-success: #facc15;
+  --shop-ring: #fde047;
   --ui-primary: var(--shop-accent);
-  --ui-color-primary-50: #fff7ed;
-  --ui-color-primary-100: #ffedd5;
-  --ui-color-primary-200: #fed7aa;
-  --ui-color-primary-300: #fdba74;
-  --ui-color-primary-400: #fb923c;
+  --ui-color-primary-50: #fefce8;
+  --ui-color-primary-100: #fef9c3;
+  --ui-color-primary-200: #fef08a;
+  --ui-color-primary-300: #fde047;
+  --ui-color-primary-400: #facc15;
   --ui-color-primary-500: var(--shop-accent);
-  --ui-color-primary-600: #ea580c;
-  --ui-color-primary-700: #c2410c;
-  --ui-color-primary-800: #9a3412;
-  --ui-color-primary-900: #7c2d12;
-  --ui-color-primary-950: #431407;
+  --ui-color-primary-600: #ca8a04;
+  --ui-color-primary-700: #a16207;
+  --ui-color-primary-800: #854d0e;
+  --ui-color-primary-900: #713f12;
+  --ui-color-primary-950: #422006;
   --ui-success: var(--shop-success);
-  --ui-color-success-50: #fff7ed;
-  --ui-color-success-100: #ffedd5;
-  --ui-color-success-200: #fed7aa;
-  --ui-color-success-300: #fdba74;
-  --ui-color-success-400: #fb923c;
+  --ui-color-success-50: #fefce8;
+  --ui-color-success-100: #fef9c3;
+  --ui-color-success-200: #fef08a;
+  --ui-color-success-300: #fde047;
+  --ui-color-success-400: #facc15;
   --ui-color-success-500: var(--shop-success);
-  --ui-color-success-600: #ea580c;
-  --ui-color-success-700: #c2410c;
-  --ui-color-success-800: #9a3412;
-  --ui-color-success-900: #7c2d12;
-  --ui-color-success-950: #431407;
+  --ui-color-success-600: #ca8a04;
+  --ui-color-success-700: #a16207;
+  --ui-color-success-800: #854d0e;
+  --ui-color-success-900: #713f12;
+  --ui-color-success-950: #422006;
 
-  --admin-accent: #f97316;
-  --admin-accent-soft: #fff7ed;
-  --admin-accent-muted: #fed7aa;
-  --admin-accent-strong: #c2410c;
+  --admin-accent: #facc15;
+  --admin-accent-soft: #fefce8;
+  --admin-accent-muted: #fef08a;
+  --admin-accent-strong: #a16207;
   --admin-surface: #ffffff;
   --admin-surface-muted: #f6f7f8;
   --admin-surface-elevated: #ffffff;
@@ -58,13 +58,13 @@
   --admin-text-muted: #71717a;
   --admin-text-subtle: #a1a1aa;
   --admin-danger: #b91c1c;
-  --admin-warning: #b45309;
+  --admin-warning: #a16207;
   --admin-info: #0369a1;
-  --admin-success: #f97316;
-  --admin-ring: #fdba74;
-  --admin-chart-green: #f97316;
+  --admin-success: #facc15;
+  --admin-ring: #fde047;
+  --admin-chart-green: #facc15;
   --admin-chart-blue: #0ea5e9;
-  --admin-chart-amber: #b45309;
+  --admin-chart-amber: #a16207;
   --admin-chart-red: #b91c1c;
   --admin-chart-violet: #8b5cf6;
   --admin-sidebar-width: 17.5rem;
@@ -140,24 +140,24 @@ body :where(input, button, textarea, select) {
 }
 
 .shop-shell {
-  --ui-primary: #f97316;
-  --ui-color-primary-50: #fff7ed;
-  --ui-color-primary-100: #ffedd5;
-  --ui-color-primary-200: #fed7aa;
-  --ui-color-primary-300: #fdba74;
-  --ui-color-primary-400: #fb923c;
-  --ui-color-primary-500: #f97316;
-  --ui-color-primary-600: #ea580c;
-  --ui-color-primary-700: #c2410c;
-  --ui-color-primary-800: #9a3412;
-  --ui-color-primary-900: #7c2d12;
-  --ui-color-primary-950: #431407;
+  --ui-primary: #facc15;
+  --ui-color-primary-50: #fefce8;
+  --ui-color-primary-100: #fef9c3;
+  --ui-color-primary-200: #fef08a;
+  --ui-color-primary-300: #fde047;
+  --ui-color-primary-400: #facc15;
+  --ui-color-primary-500: #facc15;
+  --ui-color-primary-600: #ca8a04;
+  --ui-color-primary-700: #a16207;
+  --ui-color-primary-800: #854d0e;
+  --ui-color-primary-900: #713f12;
+  --ui-color-primary-950: #422006;
   --ui-success: var(--shop-success);
-  --ui-color-success-50: #fff7ed;
-  --ui-color-success-100: #ffedd5;
+  --ui-color-success-50: #fefce8;
+  --ui-color-success-100: #fef9c3;
   --ui-color-success-500: var(--shop-success);
   --ui-color-success-600: var(--shop-accent-strong);
-  --ui-color-success-700: #c2410c;
+  --ui-color-success-700: #a16207;
   --ui-error: #b91c1c;
   --ui-color-error-50: #fef2f2;
   --ui-color-error-100: #fee2e2;
@@ -166,7 +166,7 @@ body :where(input, button, textarea, select) {
   --ui-color-error-700: #7f1d1d;
   --ui-warning: var(--shop-warning);
   --ui-color-warning-500: var(--shop-warning);
-  --ui-color-warning-600: #b45309;
+  --ui-color-warning-600: #a16207;
   --ui-info: var(--shop-info);
   --ui-color-info-500: var(--shop-info);
   --ui-color-info-600: #0369a1;
@@ -198,33 +198,33 @@ body :where(input, button, textarea, select) {
 
 .admin-shell {
   --ui-primary: var(--admin-accent);
-  --ui-color-primary-50: #fff7ed;
-  --ui-color-primary-100: #ffedd5;
-  --ui-color-primary-200: #fed7aa;
-  --ui-color-primary-300: #fdba74;
-  --ui-color-primary-400: #fb923c;
+  --ui-color-primary-50: #fefce8;
+  --ui-color-primary-100: #fef9c3;
+  --ui-color-primary-200: #fef08a;
+  --ui-color-primary-300: #fde047;
+  --ui-color-primary-400: #facc15;
   --ui-color-primary-500: var(--admin-accent);
-  --ui-color-primary-600: #ea580c;
-  --ui-color-primary-700: #c2410c;
-  --ui-color-primary-800: #9a3412;
-  --ui-color-primary-900: #7c2d12;
-  --ui-color-primary-950: #431407;
+  --ui-color-primary-600: #ca8a04;
+  --ui-color-primary-700: #a16207;
+  --ui-color-primary-800: #854d0e;
+  --ui-color-primary-900: #713f12;
+  --ui-color-primary-950: #422006;
   --ui-success: var(--admin-success);
-  --ui-color-success-50: #fff7ed;
-  --ui-color-success-100: #ffedd5;
-  --ui-color-success-200: #fed7aa;
-  --ui-color-success-300: #fdba74;
-  --ui-color-success-400: #fb923c;
+  --ui-color-success-50: #fefce8;
+  --ui-color-success-100: #fef9c3;
+  --ui-color-success-200: #fef08a;
+  --ui-color-success-300: #fde047;
+  --ui-color-success-400: #facc15;
   --ui-color-success-500: var(--admin-success);
-  --ui-color-success-600: #ea580c;
-  --ui-color-success-700: #c2410c;
-  --ui-color-success-800: #9a3412;
-  --ui-color-success-900: #7c2d12;
-  --ui-color-success-950: #431407;
+  --ui-color-success-600: #ca8a04;
+  --ui-color-success-700: #a16207;
+  --ui-color-success-800: #854d0e;
+  --ui-color-success-900: #713f12;
+  --ui-color-success-950: #422006;
   --ui-warning: var(--admin-warning);
   --ui-color-warning-500: var(--admin-warning);
-  --ui-color-warning-600: #92400e;
-  --ui-color-warning-700: #78350f;
+  --ui-color-warning-600: #a16207;
+  --ui-color-warning-700: #854d0e;
   --ui-info: var(--admin-info);
   --ui-color-info-500: var(--admin-info);
   --ui-color-info-600: #075985;
@@ -267,8 +267,14 @@ body :where(input, button, textarea, select) {
   place-items: center;
   border-radius: 0.625rem;
   background: var(--admin-accent);
-  color: white;
-  box-shadow: 0 10px 22px rgb(194 65 12 / 14%);
+  color: var(--admin-text);
+  box-shadow: 0 10px 22px rgb(161 98 7 / 16%);
+}
+
+.shop-shell :where(.bg-primary.text-inverted),
+.admin-shell :where(.bg-primary.text-inverted),
+.admin-shell :where(.bg-\(--admin-accent\).text-white) {
+  color: #18181b;
 }
 
 .admin-shell :where(.text-zinc-400) {
@@ -285,7 +291,7 @@ body :where(input, button, textarea, select) {
 
 .shop-shell :where(.text-emerald-50\/70, .text-emerald-50\/80),
 .admin-shell :where(.text-emerald-50\/70, .text-emerald-50\/80) {
-  color: rgb(255 247 237 / 0.78);
+  color: rgb(254 252 232 / 0.82);
 }
 
 .shop-shell :where(.text-emerald-600, .text-emerald-700, .text-emerald-800, .text-emerald-900, .text-emerald-950),
@@ -326,12 +332,12 @@ body :where(input, button, textarea, select) {
 
 .shop-shell :where(.bg-emerald-200, .bg-emerald-200\/70),
 .admin-shell :where(.bg-emerald-200, .bg-emerald-200\/70) {
-  background-color: rgb(253 186 116 / 0.72);
+  background-color: rgb(254 240 138 / 0.74);
 }
 
 .shop-shell :where(.bg-emerald-400),
 .admin-shell :where(.bg-emerald-400) {
-  background-color: #fb923c;
+  background-color: #facc15;
 }
 
 .shop-shell :where(.bg-emerald-500),
@@ -366,24 +372,24 @@ body :where(input, button, textarea, select) {
 
 .shop-shell :where(.ring-emerald-100, .ring-emerald-200, .hover\:ring-emerald-200:hover),
 .admin-shell :where(.ring-emerald-100, .ring-emerald-200, .hover\:ring-emerald-200:hover) {
-  --tw-ring-color: rgb(253 186 116 / 0.74);
+  --tw-ring-color: rgb(253 224 71 / 0.78);
 }
 
 .shop-shell :where(.ring-emerald-500, .focus-visible\:ring-emerald-500:focus-visible),
 .shop-shell :where(.focus\:ring-emerald-300:focus, .focus-within\:ring-emerald-500\/45:focus-within),
 .admin-shell :where(.ring-emerald-500, .focus-visible\:ring-emerald-500:focus-visible),
 .admin-shell :where(.focus\:ring-emerald-300:focus, .focus-within\:ring-emerald-500\/45:focus-within) {
-  --tw-ring-color: rgb(249 115 22 / 0.5);
+  --tw-ring-color: rgb(250 204 21 / 0.56);
 }
 
 .shop-shell :where([class*="shadow-emerald"], [class*="shadow-green"]),
 .admin-shell :where([class*="shadow-emerald"], [class*="shadow-green"]) {
-  --tw-shadow-color: rgb(154 52 18 / 0.17);
+  --tw-shadow-color: rgb(161 98 7 / 0.18);
 }
 
 .text-emerald-50\/70,
 .text-emerald-50\/80 {
-  color: rgb(255 247 237 / 0.78);
+  color: rgb(254 252 232 / 0.82);
 }
 
 .text-emerald-600,
@@ -408,11 +414,11 @@ body :where(input, button, textarea, select) {
 
 .bg-emerald-200,
 .bg-emerald-200\/70 {
-  background-color: rgb(253 186 116 / 0.72);
+  background-color: rgb(254 240 138 / 0.74);
 }
 
 .bg-emerald-400 {
-  background-color: #fb923c;
+  background-color: #facc15;
 }
 
 .bg-emerald-500,
@@ -429,19 +435,19 @@ body :where(input, button, textarea, select) {
 .ring-emerald-100,
 .ring-emerald-200,
 .hover\:ring-emerald-200:hover {
-  --tw-ring-color: rgb(253 186 116 / 0.74);
+  --tw-ring-color: rgb(253 224 71 / 0.78);
 }
 
 .ring-emerald-500,
 .focus-visible\:ring-emerald-500:focus-visible,
 .focus\:ring-emerald-300:focus,
 .focus-within\:ring-emerald-500\/45:focus-within {
-  --tw-ring-color: rgb(249 115 22 / 0.5);
+  --tw-ring-color: rgb(250 204 21 / 0.56);
 }
 
 [class*="shadow-emerald"],
 [class*="shadow-green"] {
-  --tw-shadow-color: rgb(154 52 18 / 0.17);
+  --tw-shadow-color: rgb(161 98 7 / 0.18);
 }
 
 .admin-shell :where(.text-sky-600, .text-sky-700) {
@@ -577,7 +583,7 @@ body :where(input, button, textarea, select) {
 .admin-sidebar-link.is-active {
   background: #ffffff;
   color: var(--admin-accent-strong);
-  box-shadow: 0 10px 28px rgb(249 115 22 / 13%);
+  box-shadow: 0 10px 28px rgb(161 98 7 / 16%);
 }
 
 .admin-topbar {

@@ -9,7 +9,7 @@
           Обновить
         </UButton>
         <UButton color="primary" variant="solid" icon="i-lucide-plus" size="lg"
-          class="h-12 justify-center rounded-full px-4 shadow-lg shadow-orange-950/10" @click="openCreate">
+          class="h-12 justify-center rounded-full px-4 shadow-lg shadow-yellow-950/10" @click="openCreate">
           Добавить рубрику
         </UButton>
       </template>
@@ -128,7 +128,7 @@
     <UModal v-model:open="editorOpen" :ui="editorModalUi">
       <template #header>
         <div class="flex min-w-0 items-start gap-4">
-          <div class="grid size-12 shrink-0 place-items-center rounded-2xl bg-(--admin-accent) text-white shadow-lg shadow-orange-950/15">
+          <div class="grid size-12 shrink-0 place-items-center rounded-2xl bg-(--admin-accent) text-white shadow-lg shadow-yellow-950/15">
             <Images class="size-6" />
           </div>
           <div class="min-w-0">
@@ -226,7 +226,7 @@
 
           <section class="space-y-5 rounded-3xl bg-white p-4 shadow-sm shadow-zinc-950/5 ring-1 ring-zinc-200/70 sm:p-5">
             <div class="flex items-start gap-3">
-              <span class="grid size-10 shrink-0 place-items-center rounded-2xl bg-orange-50 text-orange-700">
+              <span class="grid size-10 shrink-0 place-items-center rounded-2xl bg-yellow-50 text-yellow-700">
                 <UIcon name="i-lucide-package-search" class="size-5" />
               </span>
               <div>
@@ -301,7 +301,7 @@
               <div v-else
                 class="grid min-h-40 place-items-center rounded-2xl border border-dashed border-zinc-300 bg-[#f9fafb] px-4 text-center text-sm text-zinc-500">
                 <span class="grid gap-3">
-                  <span class="mx-auto grid size-11 place-items-center rounded-full bg-orange-50 text-orange-700">
+                  <span class="mx-auto grid size-11 place-items-center rounded-full bg-yellow-50 text-yellow-700">
                     <Plus class="size-5" />
                   </span>
                   <span>Выберите первый товар через поиск выше</span>
@@ -319,7 +319,7 @@
             Отмена
           </UButton>
           <UButton color="primary" size="lg" type="submit" form="collection-editor-form"
-            class="min-h-12 justify-center rounded-full px-6 shadow-lg shadow-orange-950/10" :loading="submitting">
+            class="min-h-12 justify-center rounded-full px-6 shadow-lg shadow-yellow-950/10" :loading="submitting">
             <Save class="size-4" />
             Сохранить рубрику
           </UButton>

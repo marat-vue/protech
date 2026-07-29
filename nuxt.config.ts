@@ -63,7 +63,7 @@ export default defineNuxtConfig({
       ],
       meta: [
         { name: "application-name", content: siteName },
-        { name: "theme-color", content: "#f97316" },
+        { name: "theme-color", content: "#facc15" },
         { name: "format-detection", content: "telephone=no" }
       ]
     }

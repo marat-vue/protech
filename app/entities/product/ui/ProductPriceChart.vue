@@ -197,7 +197,7 @@ const trendMeta = computed<{
     return {
       color: "primary",
       label: "Цена снизилась",
-      stroke: "#f97316",
+      stroke: "#facc15",
       textClass: "text-[var(--shop-accent-strong)]"
     };
   }

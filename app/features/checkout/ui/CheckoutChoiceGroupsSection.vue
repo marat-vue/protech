@@ -113,7 +113,7 @@ function choiceButtonClass(active: boolean, disabled = false) {
   return [
     "group relative flex min-h-[5rem] gap-2.5 rounded-[1.25rem] p-3 text-left shadow-sm transition duration-300",
     active
-      ? "bg-orange-50 shadow-[inset_0_0_0_1px_rgba(249,115,22,0.24),0_18px_50px_rgba(249,115,22,0.08)] "
+      ? "bg-yellow-50 shadow-[inset_0_0_0_1px_rgba(250,204,21,0.30),0_18px_50px_rgba(161,98,7,0.10)] "
       : "bg-[#f9fafb] shadow-zinc-950/5 hover:-translate-y-0.5 hover:bg-white hover:shadow-xl hover:shadow-zinc-950/10",
     disabled ? "cursor-not-allowed opacity-50 hover:translate-y-0 hover:shadow-sm" : ""
   ];

@@ -4,7 +4,7 @@
   >
     <template #header>
       <div class="flex min-w-0 items-start gap-4">
-        <div class="grid size-12 shrink-0 place-items-center rounded-2xl bg-(--admin-accent) text-white shadow-lg shadow-orange-950/15">
+        <div class="grid size-12 shrink-0 place-items-center rounded-2xl bg-(--admin-accent) text-white shadow-lg shadow-yellow-950/15">
           <UIcon name="i-lucide-package-plus"
             class="size-6"
           />
@@ -102,7 +102,7 @@
           size="lg"
           type="submit"
           form="product-editor-form"
-          class="min-h-12 justify-center rounded-full px-6 shadow-lg shadow-orange-950/10"
+          class="min-h-12 justify-center rounded-full px-6 shadow-lg shadow-yellow-950/10"
           :loading="submitting"
         >
           <Save class="size-4" />

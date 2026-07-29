@@ -232,10 +232,10 @@ export async function useProductPdp() {
 
     if (stockQuantity.value <= 3) {
       return {
-        dotClass: "bg-orange-500",
+        dotClass: "bg-yellow-500",
         label: `Осталось ${stockQuantity.value} шт.`,
-        pulseClass: "bg-orange-400",
-        shellClass: "bg-orange-50 text-orange-700  ",
+        pulseClass: "bg-yellow-400",
+        shellClass: "bg-yellow-50 text-yellow-700  ",
       };
     }
 

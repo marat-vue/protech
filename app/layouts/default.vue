@@ -1,5 +1,5 @@
 <template>
-  <div class="shop-shell min-h-screen bg-(--shop-surface-muted) text-(--shop-text)">
+  <div class="shop-shell min-h-screen bg-(--shop-surface-muted) pb-[calc(4.75rem+env(safe-area-inset-bottom))] text-(--shop-text) md:pb-0">
     <a href="#main-content"
       class="sr-only fixed left-4 top-4 z-[100] rounded-full bg-zinc-950 px-4 py-2 text-sm font-semibold text-white shadow-xl focus:not-sr-only focus:outline-none focus:ring-2 focus:ring-emerald-300">
       К основному содержимому
@@ -12,6 +12,7 @@
     </main>
 
     <PublicFooter />
+    <PublicMobileNavigation />
   </div>
 </template>
 

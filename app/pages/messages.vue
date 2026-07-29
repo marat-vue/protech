@@ -1,6 +1,6 @@
 <template>
   <div class="mx-auto w-full max-w-330 px-4 py-4 sm:px-6 lg:px-8 lg:py-5">
-    <section class="flex h-[calc(100dvh-8rem)] min-h-0 flex-col overflow-hidden rounded-2xl border border-zinc-100 bg-white shadow-[0_18px_60px_rgba(15,23,42,0.06)]">
+    <section class="flex h-[calc(100dvh-13rem-env(safe-area-inset-bottom))] min-h-0 flex-col overflow-hidden rounded-2xl border border-zinc-100 bg-white shadow-[0_18px_60px_rgba(15,23,42,0.06)] md:h-[calc(100dvh-8rem)]">
       <header class="shrink-0 border-b border-zinc-100 px-3 py-3 sm:px-4">
         <div class="flex flex-wrap items-center justify-between gap-3">
           <div class="flex items-center gap-2.5">

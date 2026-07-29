@@ -30,7 +30,7 @@
           <div class="absolute inset-0 bg-[linear-gradient(90deg,rgba(9,9,11,0.86),rgba(9,9,11,0.48)_54%,rgba(9,9,11,0.18))]" />
 
           <div class="relative flex min-h-[27rem] flex-col justify-end p-5 pb-20 sm:min-h-[22rem] sm:p-7 sm:pb-24 lg:p-9">
-            <p class="text-sm font-semibold uppercase text-orange-200">
+            <p class="text-sm font-semibold uppercase text-yellow-200">
               Рубрика каталога
             </p>
             <h2 class="mt-3 max-w-4xl text-3xl font-semibold tracking-normal sm:text-5xl">
@@ -45,7 +45,7 @@
                 color="primary"
                 size="lg"
                 icon="i-lucide-sparkles"
-                class="min-h-12 rounded-full px-5 shadow-lg shadow-orange-950/20"
+                class="min-h-12 rounded-full px-5 shadow-lg shadow-yellow-950/20"
                 @click="selectCollection(collection.id)"
               >
                 Показать товары
@@ -99,7 +99,7 @@
           :key="collection.id"
           type="button"
           class="h-2.5 rounded-full bg-white/38 transition-all hover:bg-white/70"
-          :class="index === activeIndex ? 'w-8 bg-orange-300' : 'w-2.5'"
+          :class="index === activeIndex ? 'w-8 bg-yellow-300' : 'w-2.5'"
           :aria-label="`Показать рубрику ${collection.title}`"
           @click="showSlide(index)"
         />

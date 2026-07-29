@@ -1,4 +1,28 @@
-import type { MoneyLike, ObtainingMethod, OrderStatus, PaymentMethod, PaymentStatus } from "~~/app/shared/types/admin";
+import type {
+  CallbackRequestStatus,
+  MoneyLike,
+  ObtainingMethod,
+  OrderStatus,
+  PaymentMethod,
+  PaymentStatus
+} from "~~/app/shared/types/admin";
+
+export const callbackRequestStatusLabels: Record<CallbackRequestStatus, string> = {
+  NEW: "Новая",
+  IN_PROGRESS: "В работе",
+  COMPLETED: "Завершена",
+  CANCELLED: "Отменена"
+};
+
+export const callbackRequestStatusColor: Record<
+  CallbackRequestStatus,
+  "neutral" | "primary" | "warning" | "success" | "error" | "info"
+> = {
+  NEW: "info",
+  IN_PROGRESS: "warning",
+  COMPLETED: "success",
+  CANCELLED: "neutral"
+};
 
 export const orderStatusLabels: Record<OrderStatus, string> = {
   NEW: "Новый",

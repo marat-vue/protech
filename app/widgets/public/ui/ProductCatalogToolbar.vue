@@ -1,5 +1,6 @@
 <template>
-  <section aria-label="Фильтры каталога" role="search" class="rounded-4xl bg-[#f9fafb]/90 p-2 shadow-[0_18px_60px_rgba(24,24,27,0.06)] backdrop-blur">
+  <section id="catalog" aria-label="Фильтры каталога" role="search"
+    class="scroll-mt-40 rounded-4xl bg-[#f9fafb]/90 p-2 shadow-[0_18px_60px_rgba(24,24,27,0.06)] backdrop-blur">
     <div class="grid gap-3 md:grid-cols-[minmax(260px,1fr)_minmax(220px,280px)] xl:grid-cols-[minmax(280px,1fr)_minmax(210px,260px)_auto] xl:items-center">
       <UInput v-model="search" icon="i-lucide-search" variant="none" size="lg"
         placeholder="Найти товар, бренд или описание" class="w-full rounded-full bg-white shadow-sm shadow-zinc-950/5 "

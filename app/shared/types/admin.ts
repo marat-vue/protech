@@ -13,6 +13,20 @@ export type PaginatedResponse<T> = {
 };
 
 export type UserRole = "USER" | "ADMIN";
+export type CallbackRequestStatus = "NEW" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
+
+export type AdminCallbackRequest = {
+  id: number;
+  name: string;
+  phone: string;
+  consentAccepted: boolean;
+  sourcePath: string | null;
+  status: CallbackRequestStatus;
+  adminNote: string | null;
+  processedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
 
 export type AdminUser = {
   id: string;

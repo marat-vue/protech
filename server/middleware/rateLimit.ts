@@ -22,6 +22,12 @@ type RateLimitBucket = {
 
 const rules: RateLimitRule[] = [
   {
+    name: "callback_request",
+    max: getPositiveIntegerEnv("RATE_LIMIT_CALLBACK_REQUEST_MAX", 10),
+    windowMs: getPositiveIntegerEnv("RATE_LIMIT_CALLBACK_REQUEST_WINDOW_MS", 60_000),
+    matches: (path) => path.startsWith("/api/public/callback-requests")
+  },
+  {
     name: "auth",
     max: getPositiveIntegerEnv("RATE_LIMIT_AUTH_MAX", 30),
     windowMs: getPositiveIntegerEnv("RATE_LIMIT_AUTH_WINDOW_MS", 60_000),

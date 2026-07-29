@@ -26,6 +26,12 @@ export async function useProductCatalog() {
   const cart = useCartStore();
   const favorites = useFavoritesStore();
   const ui = useShopUiStore();
+  const routeSearch = Array.isArray(route.query.search) ? route.query.search[0] : route.query.search;
+
+  if (typeof routeSearch === "string") {
+    ui.catalog.search = routeSearch.trim().slice(0, 200);
+  }
+
   const catalogFetchOptions = {
     forwardRequestHeaders: false,
     headers: import.meta.server ? useRequestHeaders(["cookie"]) : {}

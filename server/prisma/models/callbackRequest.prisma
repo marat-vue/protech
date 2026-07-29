@@ -1,0 +1,23 @@
+enum CallbackRequestStatus {
+    NEW
+    IN_PROGRESS
+    COMPLETED
+    CANCELLED
+}
+
+model CallbackRequest {
+    id              Int                   @id @default(autoincrement())
+    name            String
+    phone           String
+    consentAccepted Boolean               @map("consent_accepted")
+    sourcePath      String?               @map("source_path")
+    status          CallbackRequestStatus @default(NEW)
+    adminNote       String?               @map("admin_note")
+    processedAt     DateTime?             @map("processed_at")
+    createdAt       DateTime              @default(now()) @map("created_at")
+    updatedAt       DateTime              @updatedAt @map("updated_at")
+
+    @@index([status, createdAt])
+    @@index([phone])
+    @@map("callback_request")
+}

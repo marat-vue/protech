@@ -7,7 +7,7 @@
 
     <PublicHeader />
 
-    <main id="main-content" class="min-h-[calc(100dvh-9rem)]" tabindex="-1">
+    <main id="main-content" class="min-h-[calc(100dvh-9rem)] pt-24 xl:pt-38" tabindex="-1">
       <slot />
     </main>
 

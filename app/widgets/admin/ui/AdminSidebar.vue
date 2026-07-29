@@ -133,6 +133,7 @@ import {
   Images,
   PackageSearch,
   PanelLeftClose,
+  PhoneCall,
   Store,
   Users,
   Warehouse,
@@ -172,7 +173,8 @@ const navGroups = [
     label: "Операции",
     items: [
       { label: "Заказы", to: "/admin/orders", icon: ClipboardList },
-      { label: "Сообщения", to: "/admin/messages", icon: MessagesSquare }
+      { label: "Сообщения", to: "/admin/messages", icon: MessagesSquare },
+      { label: "Заявки на звонок", to: "/admin/callback-requests", icon: PhoneCall }
     ]
   },
   {

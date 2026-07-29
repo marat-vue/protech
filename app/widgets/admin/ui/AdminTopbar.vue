@@ -75,6 +75,7 @@ import {
   MessagesSquare,
   Images,
   PackageSearch,
+  PhoneCall,
   Users,
   Warehouse
 } from "@lucide/vue";
@@ -128,6 +129,11 @@ const pageMeta = {
     icon: MessagesSquare,
     title: "Сообщения",
     subtitle: "Диалоги с пользователями"
+  },
+  "/admin/callback-requests": {
+    icon: PhoneCall,
+    title: "Заявки на звонок",
+    subtitle: "Обратные звонки, статусы и заметки"
   },
   "/admin/users": {
     icon: Users,

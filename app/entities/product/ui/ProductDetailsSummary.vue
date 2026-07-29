@@ -12,13 +12,20 @@
     </h1>
 
     <div class="mt-3 flex flex-wrap items-center gap-2 text-sm text-zinc-500">
-      <span class="inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 shadow-sm shadow-zinc-950/5">
+      <span v-if="hasReviews"
+        class="inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 shadow-sm shadow-zinc-950/5">
         <UIcon name="i-lucide-star"
-          class="size-4 text-amber-400"
-          :class="averageRating ? 'fill-amber-400' : ''"
+          class="size-4 fill-amber-400 text-amber-400"
         />
         <span class="font-semibold text-zinc-950">{{ averageRatingLabel }}</span>
         <span>{{ reviewCountLabel }}</span>
+      </span>
+      <span v-else
+        class="inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 font-medium text-zinc-500 shadow-sm shadow-zinc-950/5">
+        <UIcon name="i-lucide-message-circle"
+          class="size-4 text-zinc-400"
+        />
+        Нет отзывов
       </span>
     </div>
 
@@ -106,6 +113,7 @@ defineEmits<{
 }>();
 
 const reviewCountLabel = computed(() => `${props.product.reviews.length} ${pluralizeReview(props.product.reviews.length)}`);
+const hasReviews = computed(() => props.product.reviews.length > 0);
 const visibleAttributes = computed(() => props.product.productAttributes.slice(0, 8));
 const details = computed(() => [
   {

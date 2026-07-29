@@ -1,0 +1,19 @@
+{
+  "name": "ПроТех76",
+  "short_name": "ПроТех76",
+  "description": "Запчасти и навесное оборудование для мини-экскаваторов Rippa.",
+  "lang": "ru-RU",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f6f7f8",
+  "theme_color": "#f97316",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

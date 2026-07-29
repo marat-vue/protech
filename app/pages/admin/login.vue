@@ -75,8 +75,10 @@ definePageMeta({
   layout: false
 });
 
-useHead({
-  title: "Вход в админ-панель"
+useSeoMeta({
+  title: "Вход в админ-панель",
+  description: "Вход в панель администратора ПроТех76.",
+  robots: "noindex, nofollow"
 });
 
 const loginSchema = z.strictObject({

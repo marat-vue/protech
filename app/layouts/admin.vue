@@ -74,9 +74,32 @@ import { useAdminUiStore } from "~~/app/stores/adminUi";
 import type { AdminUser } from "~~/app/shared/types/admin";
 
 const ui = useAdminUiStore();
+const route = useRoute();
 const mobileMenuOpen = ref(false);
 const mobileAdminPanel = ref<HTMLElement | null>(null);
 let lastAdminFocusedElement: HTMLElement | null = null;
+const adminPageTitles: Record<string, string> = {
+  "/admin": "Аналитика",
+  "/admin/products": "Товары",
+  "/admin/collections": "Рубрики",
+  "/admin/stock": "Остатки",
+  "/admin/catalog": "Справочники",
+  "/admin/orders": "Заказы",
+  "/admin/messages": "Сообщения",
+  "/admin/users": "Пользователи",
+  "/admin/reviews": "Отзывы"
+};
+const adminPageTitle = computed(() => {
+  const match = Object.entries(adminPageTitles)
+    .find(([path]) => (path === "/admin" ? route.path === path : route.path.startsWith(path)));
+
+  return match ? `${match[1]} · Админ-панель` : "Админ-панель";
+});
+
+useSeoMeta({
+  title: () => adminPageTitle.value,
+  robots: "noindex, nofollow"
+});
 
 const { data, pending, error, refresh } = await useAsyncData("admin-me", () =>
   adminFetch<{ user: AdminUser }>("/api/admin/me")

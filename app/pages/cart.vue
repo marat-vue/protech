@@ -98,7 +98,8 @@ import { useCartStore } from "~~/app/stores/cart";
 
 useSeoMeta({
   title: "Корзина",
-  description: "Корзина покупателя ПроТех76."
+  description: "Корзина покупателя ПроТех76.",
+  robots: "noindex, nofollow"
 });
 
 const auth = useAuthStore();

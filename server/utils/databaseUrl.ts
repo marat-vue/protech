@@ -1,4 +1,7 @@
+import { config as loadDotenv } from "dotenv";
 import type { PoolConfig } from "pg";
+
+loadDotenv();
 
 type DatabaseEnv = Record<string, string | undefined>;
 

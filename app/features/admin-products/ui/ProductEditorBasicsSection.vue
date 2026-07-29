@@ -8,7 +8,7 @@
         class="w-full rounded-2xl bg-[#f9fafb] shadow-inner shadow-zinc-950/5"
         size="xl"
         variant="none"
-        placeholder="Например, Аккумулятор ProTech X"
+        placeholder="Например, Аккумулятор Rippa X"
         :ui="inputUi"
         @update:model-value="emit('updateField', 'name', String($event ?? ''))"
       />

@@ -41,15 +41,17 @@
       </div>
 
       <div v-if="entries.length > 1"
-        class="flex overflow-hidden rounded-2xl bg-[#f9fafb] p-2 sm:p-4 lg:min-h-80"
+        class="overflow-hidden rounded-2xl bg-[#f9fafb] p-3 sm:p-4 lg:flex lg:min-h-80"
       >
-        <svg viewBox="0 0 760 320"
-          class="h-auto w-full lg:h-full lg:min-h-80"
+        <svg v-for="chart in chartViews"
+          :key="chart.key"
+          :viewBox="chart.viewBox"
+          :class="chart.className"
           role="img"
           aria-label="График изменения цены"
         >
           <defs>
-            <linearGradient id="price-area-gradient"
+            <linearGradient :id="chart.gradientId"
               x1="0"
               x2="0"
               y1="0"
@@ -67,30 +69,31 @@
           </defs>
 
           <g>
-            <line v-for="line in gridLines"
+            <line v-for="line in chart.gridLines"
               :key="line.key"
-              x1="72"
-              x2="724"
+              :x1.attr="svgNumber(chart.bounds.left)"
+              :x2.attr="svgNumber(chart.bounds.right)"
               :y1.attr="svgNumber(line.y)"
               :y2.attr="svgNumber(line.y)"
               stroke="#e4e4e7"
               stroke-dasharray="4 8"
             />
-            <text v-for="line in gridLines"
+            <text v-for="line in chart.gridLines"
               :key="`${line.key}-label`"
-              x="18"
-              :y.attr="svgNumber(line.y + 5)"
+              :x.attr="svgNumber(chart.labelInset)"
+              :y.attr="svgNumber(line.y + chart.gridLabelOffsetY)"
               fill="#71717a"
-              font-size="13"
+              :font-size.attr="chart.gridFontSize"
+              :font-weight.attr="chart.gridFontWeight"
             >
               {{ compactCurrency(line.value) }}
             </text>
           </g>
 
-          <path :d.attr="areaPath"
-            fill="url(#price-area-gradient)"
+          <path :d.attr="chart.areaPath"
+            :fill.attr="`url(#${chart.gradientId})`"
           />
-          <polyline :points.attr="linePoints"
+          <polyline :points.attr="chart.linePoints"
             fill="none"
             :stroke.attr="trendMeta.stroke"
             stroke-linecap="round"
@@ -98,7 +101,7 @@
             stroke-width="5"
           />
 
-          <g v-for="point in plottedPoints"
+          <g v-for="point in chart.plottedPoints"
             :key="point.key"
           >
             <circle :cx.attr="svgNumber(point.x)"
@@ -109,11 +112,11 @@
               stroke-width="4"
             />
             <text v-if="point.showValue"
-              :x.attr="svgNumber(point.x)"
-              :y.attr="svgNumber(point.y - 14)"
-              text-anchor="middle"
+              :x.attr="svgNumber(point.labelX)"
+              :y.attr="svgNumber(point.labelY)"
+              :text-anchor.attr="point.labelAnchor"
               fill="#18181b"
-              font-size="13"
+              :font-size.attr="chart.pointFontSize"
               font-weight="600"
             >
               {{ compactCurrency(point.value) }}
@@ -121,13 +124,14 @@
           </g>
 
           <g>
-            <text v-for="label in xAxisLabels"
+            <text v-for="label in chart.xAxisLabels"
               :key="label.key"
               :x.attr="svgNumber(label.x)"
-              y="300"
+              :y.attr="svgNumber(chart.xAxisLabelY)"
               text-anchor="middle"
               fill="#71717a"
-              font-size="13"
+              :font-size.attr="chart.xAxisFontSize"
+              :font-weight.attr="chart.xAxisFontWeight"
             >
               {{ label.label }}
             </text>
@@ -206,39 +210,164 @@ const trendMeta = computed<{
   };
 });
 
-const chartBounds = {
-  bottom: 260,
-  height: 210,
-  left: 72,
-  top: 36,
-  width: 652
+type ChartTextAnchor = "end" | "middle" | "start";
+type ChartBounds = {
+  bottom: number;
+  height: number;
+  left: number;
+  right: number;
+  top: number;
+  width: number;
 };
-const plottedPoints = computed(() => {
+type PriceChartVariant = {
+  bounds: ChartBounds;
+  className: string;
+  gradientId: string;
+  gridFontSize: number;
+  gridFontWeight?: string;
+  gridLabelOffsetY: number;
+  key: "desktop" | "mobile";
+  labelInset: number;
+  pointFontSize: number;
+  pointLabelMinY: number | null;
+  pointLabelOffsetY: number;
+  useEdgeLabels: boolean;
+  viewBox: string;
+  xAxisFontSize: number;
+  xAxisFontWeight?: string;
+  xAxisLabelY: number;
+};
+type PlottedPoint = {
+  createdAt: string;
+  key: string;
+  labelAnchor: ChartTextAnchor;
+  labelX: number;
+  labelY: number;
+  showValue: boolean;
+  value: number;
+  x: number;
+  y: number;
+};
+
+const chartVariants: PriceChartVariant[] = [
+  {
+    bounds: {
+      bottom: 286,
+      height: 214,
+      left: 106,
+      right: 462,
+      top: 64,
+      width: 356
+    },
+    className: "block h-auto w-full lg:hidden",
+    gradientId: "price-area-gradient-mobile",
+    gridFontSize: 21,
+    gridFontWeight: "600",
+    gridLabelOffsetY: 7,
+    key: "mobile",
+    labelInset: 16,
+    pointFontSize: 22,
+    pointLabelMinY: 38,
+    pointLabelOffsetY: 22,
+    useEdgeLabels: true,
+    viewBox: "0 0 520 360",
+    xAxisFontSize: 19,
+    xAxisFontWeight: "600",
+    xAxisLabelY: 334
+  },
+  {
+    bounds: {
+      bottom: 260,
+      height: 210,
+      left: 72,
+      right: 724,
+      top: 36,
+      width: 652
+    },
+    className: "hidden h-auto w-full lg:block lg:h-full lg:min-h-80",
+    gradientId: "price-area-gradient-desktop",
+    gridFontSize: 13,
+    gridLabelOffsetY: 5,
+    key: "desktop",
+    labelInset: 18,
+    pointFontSize: 13,
+    pointLabelMinY: null,
+    pointLabelOffsetY: 14,
+    useEdgeLabels: false,
+    viewBox: "0 0 760 320",
+    xAxisFontSize: 13,
+    xAxisLabelY: 300
+  }
+];
+const chartViews = computed(() =>
+  chartVariants.map((variant) => {
+    const plottedPoints = buildPlottedPoints(variant);
+
+    return {
+      ...variant,
+      areaPath: buildAreaPath(variant.bounds, plottedPoints),
+      gridLines: buildGridLines(variant.bounds),
+      linePoints: plottedPoints.map((point) => `${point.x},${point.y}`).join(" "),
+      plottedPoints,
+      xAxisLabels: buildXAxisLabels(plottedPoints)
+    };
+  })
+);
+
+function buildPlottedPoints(variant: PriceChartVariant): PlottedPoint[] {
   const range = Math.max(maxValue.value - minValue.value, 1);
   const lastIndex = Math.max(entries.value.length - 1, 1);
 
-  return entries.value.map((entry, index) => ({
-    key: `${entry.id}-${entry.createdAt}`,
-    showValue: index === 0 || index === entries.value.length - 1 || entry.numericValue === minValue.value || entry.numericValue === maxValue.value,
-    value: entry.numericValue,
-    x: chartBounds.left + (index / lastIndex) * chartBounds.width,
-    y: chartBounds.top + chartBounds.height - ((entry.numericValue - minValue.value) / range) * chartBounds.height,
-    createdAt: entry.createdAt
-  }));
-});
-const linePoints = computed(() => plottedPoints.value.map((point) => `${point.x},${point.y}`).join(" "));
-const areaPath = computed(() => {
-  if (!plottedPoints.value.length) {
+  return entries.value.map((entry, index) => {
+    const x = variant.bounds.left + (index / lastIndex) * variant.bounds.width;
+    const y = variant.bounds.top + variant.bounds.height - ((entry.numericValue - minValue.value) / range) * variant.bounds.height;
+    const isFirst = index === 0;
+    const isLast = index === entries.value.length - 1;
+    const labelAnchor: ChartTextAnchor = variant.useEdgeLabels
+      ? isFirst
+        ? "start"
+        : isLast
+          ? "end"
+          : "middle"
+      : "middle";
+    const labelX = variant.useEdgeLabels
+      ? isFirst
+        ? variant.bounds.left
+        : isLast
+          ? variant.bounds.right
+          : x
+      : x;
+    const labelY = variant.pointLabelMinY === null
+      ? y - variant.pointLabelOffsetY
+      : Math.max(variant.pointLabelMinY, y - variant.pointLabelOffsetY);
+
+    return {
+      createdAt: entry.createdAt,
+      key: `${entry.id}-${entry.createdAt}`,
+      labelAnchor,
+      labelX,
+      labelY,
+      showValue: index === 0 || index === entries.value.length - 1 || entry.numericValue === minValue.value || entry.numericValue === maxValue.value,
+      value: entry.numericValue,
+      x,
+      y
+    };
+  });
+}
+
+function buildAreaPath(bounds: ChartBounds, plottedPoints: PlottedPoint[]) {
+  if (!plottedPoints.length) {
     return "";
   }
 
-  const first = plottedPoints.value[0]!;
-  const last = plottedPoints.value[plottedPoints.value.length - 1]!;
-  const line = plottedPoints.value.map((point) => `${point.x},${point.y}`).join(" L ");
+  const first = plottedPoints[0]!;
+  const last = plottedPoints[plottedPoints.length - 1]!;
+  const line = plottedPoints.map((point) => `${point.x},${point.y}`).join(" L ");
 
-  return `M ${first.x},${chartBounds.bottom} L ${line} L ${last.x},${chartBounds.bottom} Z`;
-});
-const gridLines = computed(() => {
+  return `M ${first.x},${bounds.bottom} L ${line} L ${last.x},${bounds.bottom} Z`;
+}
+
+function buildGridLines(bounds: ChartBounds) {
   const steps = 4;
   const range = Math.max(maxValue.value - minValue.value, 1);
 
@@ -249,23 +378,24 @@ const gridLines = computed(() => {
     return {
       key: `grid-${index}`,
       value,
-      y: chartBounds.top + chartBounds.height * ratio
+      y: bounds.top + bounds.height * ratio
     };
   });
-});
-const xAxisLabels = computed(() => {
-  if (!plottedPoints.value.length) {
+}
+
+function buildXAxisLabels(plottedPoints: PlottedPoint[]) {
+  if (!plottedPoints.length) {
     return [];
   }
 
   const indexes = [...new Set([
     0,
-    Math.floor((plottedPoints.value.length - 1) / 2),
-    plottedPoints.value.length - 1
+    Math.floor((plottedPoints.length - 1) / 2),
+    plottedPoints.length - 1
   ])];
 
   return indexes.map((index) => {
-    const point = plottedPoints.value[index]!;
+    const point = plottedPoints[index]!;
 
     return {
       key: `x-${index}`,
@@ -273,7 +403,7 @@ const xAxisLabels = computed(() => {
       x: point.x
     };
   });
-});
+}
 
 function compactCurrency(value: number) {
   return new Intl.NumberFormat("ru-RU", {

@@ -7,7 +7,7 @@ import { sendEmailVerification } from "./authEmail";
 const isProduction = process.env.NODE_ENV === "production";
 
 export const auth = betterAuth({
-  appName: "ProTech",
+  appName: "ПроТех76",
   baseURL: process.env.BETTER_AUTH_URL,
   basePath: "/api/auth",
   database: prismaAdapter(prisma, {

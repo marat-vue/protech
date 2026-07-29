@@ -112,7 +112,8 @@ const detailsOpen = ref(false);
 
 useSeoMeta({
   title: () => order.value ? `Заказ №${order.value.id}` : "Заказ",
-  description: "Детальная информация о заказе ПроТех76."
+  description: "Детальная информация о заказе ПроТех76.",
+  robots: "noindex, nofollow"
 });
 
 const detailMetrics = computed(() => {

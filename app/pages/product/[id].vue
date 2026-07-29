@@ -64,7 +64,7 @@ const {
   stockStatus,
   toggleFavorite,
   updateCartQuantity
-} = useProductPdp();
+} = await useProductPdp();
 
 const detailsOpen = ref(false);
 </script>

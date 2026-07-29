@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-white/30 text-zinc-950">
     <div class="mx-auto w-full max-w-370 px-1 py-8 sm:px-6 lg:px-8 lg:py-10">
-      <ProductCatalogHero :cart-total="cart.totalItems" />
+      <ProductCatalogHero />
 
       <ProductCollectionSpotlight :collections="collections" :selected-collection-id="ui.catalog.collectionId"
         @select="selectCollection" />

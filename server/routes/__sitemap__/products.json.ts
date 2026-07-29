@@ -1,4 +1,7 @@
-export default defineEventHandler(async () => {
+import { getRequestURL, type H3Event } from "h3";
+
+export default defineEventHandler(async (event) => {
+  const siteUrl = getPublicSiteUrl(event);
   const products = await prisma.product.findMany({
     orderBy: [
       { updatedAt: "desc" },
@@ -25,7 +28,9 @@ export default defineEventHandler(async () => {
     const imageUrls = [
       product.mainImage,
       ...product.productImages.map((image) => image.url)
-    ].filter(Boolean);
+    ]
+      .map((url) => normalizePublicUrl(url, siteUrl))
+      .filter((url): url is string => Boolean(url));
 
     return {
       loc: `/product/${product.id}`,
@@ -40,3 +45,25 @@ export default defineEventHandler(async () => {
     };
   });
 });
+
+function getPublicSiteUrl(event: H3Event) {
+  const configuredUrl = process.env.NUXT_SITE_URL ?? process.env.NUXT_PUBLIC_SITE_URL ?? process.env.NUXT_PUBLIC_APP_URL;
+
+  if (configuredUrl && !/localhost|127\.0\.0\.1/.test(configuredUrl)) {
+    return configuredUrl.replace(/\/+$/, "");
+  }
+
+  return getRequestURL(event).origin.replace(/\/+$/, "");
+}
+
+function normalizePublicUrl(url: string | null | undefined, siteUrl: string) {
+  if (!url) {
+    return null;
+  }
+
+  try {
+    return new URL(url, siteUrl).toString();
+  } catch {
+    return null;
+  }
+}

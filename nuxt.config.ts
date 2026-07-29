@@ -7,6 +7,7 @@ const siteUrl = configuredSiteUrl && !/localhost|127\.0\.0\.1/.test(configuredSi
   : undefined;
 const siteName = "ПроТех76";
 const siteDescription = "Интернет-магазин запчастей, навесного оборудования и комплектующих для мини-экскаваторов Rippa.";
+const privateRobotsHeader = "noindex, nofollow, noarchive";
 
 const securityHeaders = {
   "content-security-policy": [
@@ -17,11 +18,23 @@ const securityHeaders = {
     "upgrade-insecure-requests"
   ].join("; "),
   "cross-origin-opener-policy": "same-origin",
+  "x-dns-prefetch-control": "on",
   "permissions-policy": "camera=(), microphone=(), geolocation=(), payment=()",
   "referrer-policy": "strict-origin-when-cross-origin",
   "strict-transport-security": "max-age=31536000; includeSubDomains",
   "x-content-type-options": "nosniff",
+  "x-download-options": "noopen",
   "x-frame-options": "SAMEORIGIN"
+};
+
+const privateRouteRule = {
+  ssr: false,
+  robots: false,
+  headers: {
+    ...securityHeaders,
+    "cache-control": "no-store, no-cache, must-revalidate",
+    "x-robots-tag": privateRobotsHeader
+  }
 };
 
 export default defineNuxtConfig({
@@ -43,11 +56,13 @@ export default defineNuxtConfig({
       link: [
         { rel: "icon", href: "/favicon.ico", sizes: "any" },
         { rel: "apple-touch-icon", href: "/logo.png" },
+        { rel: "manifest", href: "/site.webmanifest" },
         { rel: "preconnect", href: "https://fonts.googleapis.com" },
         { rel: "preconnect", href: "https://fonts.gstatic.com", crossorigin: "" },
         { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700;800&family=Tektur:wght@500;600;700;800;900&display=swap" }
       ],
       meta: [
+        { name: "application-name", content: siteName },
         { name: "theme-color", content: "#f97316" },
         { name: "format-detection", content: "telephone=no" }
       ]
@@ -89,7 +104,7 @@ export default defineNuxtConfig({
     yookassaApiUrl: process.env.YOOKASSA_API_URL,
     yookassaReturnUrl: process.env.YOOKASSA_RETURN_URL ?? process.env.YOKASSA_RETURN_URL,
     public: {
-      appUrl: process.env.NUXT_PUBLIC_APP_URL
+      appUrl: process.env.NUXT_PUBLIC_APP_URL ?? siteUrl
     }
   },
   site: {
@@ -107,6 +122,7 @@ export default defineNuxtConfig({
       ogImage: "/logo.png",
       ogImageAlt: "Логотип ПроТех76",
       ogLocale: "ru_RU",
+      ogSiteName: siteName,
       twitterCard: "summary_large_image"
     }
   },
@@ -121,7 +137,8 @@ export default defineNuxtConfig({
       "/favorites",
       "/messages",
       "/orders",
-      "/orders/**"
+      "/orders/**",
+      "/api/**"
     ],
     disallowNonIndexableRoutes: false,
     sitemap: ["/sitemap.xml"]
@@ -146,7 +163,8 @@ export default defineNuxtConfig({
       "/favorites",
       "/messages",
       "/orders",
-      "/orders/**"
+      "/orders/**",
+      "/api/**"
     ],
     defaults: {
       changefreq: "weekly",
@@ -191,6 +209,13 @@ export default defineNuxtConfig({
         "max-image-preview": "large"
       },
     },
+    "/about": {
+      robots: {
+        index: true,
+        follow: true,
+        "max-image-preview": "large"
+      }
+    },
     "/product/**": {
       robots: {
         index: true,
@@ -199,60 +224,68 @@ export default defineNuxtConfig({
       },
     },
     "/auth": {
-      ssr: false,
-      robots: false
+      ...privateRouteRule
     },
     "/cart": {
-      ssr: false,
-      robots: false
+      ...privateRouteRule
     },
     "/checkout": {
-      ssr: false,
-      robots: false
+      ...privateRouteRule
     },
     "/favorites": {
-      ssr: false,
-      robots: false
+      ...privateRouteRule
     },
     "/messages": {
-      ssr: false,
-      robots: false
+      ...privateRouteRule
     },
     "/orders": {
-      ssr: false,
-      robots: false
+      ...privateRouteRule
     },
     "/orders/**": {
-      ssr: false,
-      robots: false
+      ...privateRouteRule
     },
     "/admin": {
-      ssr: false,
-      robots: false
+      ...privateRouteRule
     },
     "/admin/**": {
-      ssr: false,
-      robots: false
+      ...privateRouteRule
     },
     "/_nuxt/**": {
       headers: {
+        ...securityHeaders,
         "cache-control": "public, max-age=31536000, immutable"
       }
     },
     "/favicon.ico": {
       headers: {
+        ...securityHeaders,
         "cache-control": "public, max-age=86400"
       }
     },
     "/logo.png": {
       headers: {
+        ...securityHeaders,
         "cache-control": "public, max-age=86400"
+      }
+    },
+    "/site.webmanifest": {
+      headers: {
+        ...securityHeaders,
+        "cache-control": "public, max-age=86400"
+      }
+    },
+    "/uploads/**": {
+      headers: {
+        ...securityHeaders,
+        "cache-control": "public, max-age=31536000, immutable"
       }
     },
     "/api/**": {
       cache: false,
       headers: {
-        "cache-control": "no-store, no-cache, must-revalidate"
+        ...securityHeaders,
+        "cache-control": "no-store, no-cache, must-revalidate",
+        "x-robots-tag": privateRobotsHeader
       }
     },
   },

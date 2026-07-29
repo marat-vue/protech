@@ -77,7 +77,8 @@ import { useAuthStore } from "~~/app/stores/auth";
 
 useSeoMeta({
   title: "Мои заказы",
-  description: "История заказов покупателя ПроТех76."
+  description: "История заказов покупателя ПроТех76.",
+  robots: "noindex, nofollow"
 });
 
 const auth = useAuthStore();

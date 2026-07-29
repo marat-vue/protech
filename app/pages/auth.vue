@@ -100,7 +100,8 @@ import { useFavoritesStore } from "~~/app/stores/favorites";
 
 useSeoMeta({
   title: "Вход и регистрация",
-  description: "Войдите или создайте аккаунт ПроТех76, чтобы пользоваться корзиной, избранным и историей заказов."
+  description: "Войдите или создайте аккаунт ПроТех76, чтобы пользоваться корзиной, избранным и историей заказов.",
+  robots: "noindex, nofollow"
 });
 
 const route = useRoute();

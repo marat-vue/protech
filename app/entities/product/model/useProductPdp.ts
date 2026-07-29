@@ -22,7 +22,7 @@ export type ProductStockStatus = {
   shellClass: string;
 };
 
-export function useProductPdp() {
+export async function useProductPdp() {
   const route = useRoute();
   const auth = useAuthStore();
   const cart = useCartStore();
@@ -32,18 +32,40 @@ export function useProductPdp() {
   const selectedColor = ref("");
   const queuedCartQuantity = ref<number | null>(null);
   const quantityUpdateInFlight = ref(false);
-  const productId = computed(() => Number(route.params.id));
+  const productId = computed(() => {
+    const rawId = Array.isArray(route.params.id) ? route.params.id[0] : route.params.id;
+    const parsedId = Number(rawId);
+
+    return Number.isInteger(parsedId) && parsedId > 0 ? parsedId : null;
+  });
   let quantityUpdateTimer: ReturnType<typeof setTimeout> | undefined;
 
-  const { data: product, pending, error, refresh } = useAsyncData(
-    () => `shop-product-${productId.value}`,
-    () => shopFetch<ProductDetails>(`/api/public/product/${productId.value}`),
+  const productAsyncData = useAsyncData(
+    () => `shop-product-${productId.value ?? "invalid"}`,
+    () => {
+      if (productId.value === null) {
+        throw createError({
+          statusCode: 404,
+          statusMessage: "Товар не найден"
+        });
+      }
+
+      return shopFetch<ProductDetails>(`/api/public/product/${productId.value}`);
+    },
     { watch: [productId] }
   );
+  const { data: product, pending, error, refresh } = productAsyncData;
 
-  const pageDescription = computed(() =>
-    truncateSeoText(product.value?.description, "Карточка товара ProTech")
-  );
+  const pageDescription = computed(() => {
+    const currentProduct = product.value;
+
+    return truncateSeoText(
+      currentProduct?.description,
+      currentProduct
+        ? `${currentProduct.name} в каталоге ПроТех76: цена, наличие, характеристики и отзывы.`
+        : "Карточка товара ПроТех76."
+    );
+  });
   const productImageUrls = computed(() => {
     const seen = new Set<string>();
 
@@ -67,6 +89,8 @@ export function useProductPdp() {
     ogDescription: () => pageDescription.value,
     ogImage: () => productImageUrls.value[0] ?? "/logo.png",
     ogImageAlt: () => product.value?.name ?? "Товар ПроТех76",
+    ogSiteName: "ПроТех76",
+    robots: () => product.value ? "index, follow, max-image-preview:large" : "noindex, nofollow",
     twitterCard: "summary_large_image"
   });
   useHead({
@@ -78,7 +102,7 @@ export function useProductPdp() {
   const stockQuantity = computed(() => product.value?.productStocks[0]?.quantity ?? 0);
   const maxQuantity = computed(() => Math.max(Math.min(stockQuantity.value, 99), 1));
   const selectedQuantityTotal = computed(() => formatCurrency(toNumber(product.value?.currentPrice) * quantity.value));
-  const brandName = computed(() => product.value ? productBrand(product.value) : "ProTech");
+  const brandName = computed(() => product.value ? productBrand(product.value) : "ПроТех76");
   const colorOptions = computed(() => product.value ? productColorValues(product.value) : []);
   const discountValue = computed(() => product.value ? discountPercent(product.value) : 0);
   const isFavorite = computed(() => product.value ? favorites.productIds.includes(product.value.id) : false);
@@ -291,6 +315,18 @@ export function useProductPdp() {
     return normalized.length > 160 ? `${normalized.slice(0, 157)}...` : normalized;
   }
 
+  function getErrorStatusCode(value: unknown) {
+    if (value && typeof value === "object" && "statusCode" in value) {
+      const statusCode = Number(value.statusCode);
+
+      if (Number.isInteger(statusCode) && statusCode >= 400 && statusCode <= 599) {
+        return statusCode;
+      }
+    }
+
+    return 500;
+  }
+
   function normalizeQuantity() {
     quantity.value = normalizeQuantityValue(quantity.value);
   }
@@ -416,6 +452,19 @@ export function useProductPdp() {
       toast.success(favorites.isFavorite(product.value.id) ? "Товар в избранном" : "Товар удален из избранного");
     } catch (err) {
       toast.error(getErrorMessage(err, "Не удалось обновить избранное"));
+    }
+  }
+
+  if (import.meta.server) {
+    await productAsyncData;
+
+    if (error.value) {
+      const statusCode = getErrorStatusCode(error.value);
+
+      throw createError({
+        statusCode,
+        statusMessage: statusCode === 404 ? "Товар не найден" : "Не удалось загрузить товар"
+      });
     }
   }
 

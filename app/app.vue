@@ -18,19 +18,20 @@ useHead({
   titleTemplate: (title) => title && title !== siteName ? `${title} · ${siteName}` : siteName,
 });
 
-if (import.meta.server) {
-  useSeoMeta({
-    title: siteName,
-    description: siteDescription,
-    ogTitle: siteName,
-    ogDescription: siteDescription,
-    ogImage: "/logo.png",
-    ogImageAlt: "Логотип ПроТех76",
-    ogLocale: "ru_RU",
-    twitterCard: "summary_large_image",
-    robots: "index, follow, max-image-preview:large"
-  });
+useSeoMeta({
+  title: siteName,
+  description: siteDescription,
+  ogTitle: siteName,
+  ogDescription: siteDescription,
+  ogImage: "/logo.png",
+  ogImageAlt: "Логотип ПроТех76",
+  ogLocale: "ru_RU",
+  ogSiteName: siteName,
+  twitterCard: "summary_large_image",
+  robots: "index, follow, max-image-preview:large"
+});
 
+if (import.meta.server) {
   defineOgImage("NuxtSeoSatori", {
     title: siteName,
     description: siteDescription

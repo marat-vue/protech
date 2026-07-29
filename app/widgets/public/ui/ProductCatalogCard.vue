@@ -56,11 +56,16 @@
       </div>
 
       <div class="flex items-center gap-1.5 text-xs text-zinc-500" :class="compact ? 'mt-2' : 'mt-1 sm:text-sm'">
-        <UIcon name="i-lucide-star" class="size-4"
-          :class="product.averageRating ? 'fill-amber-400 text-amber-400' : 'text-zinc-300'" />
-        <span class="font-medium text-zinc-700">{{ product.averageRating ?? "—" }}</span>
-        <span>-</span>
-        <span>{{ reviewCountLabel(product.reviewsCount ?? 0) }}</span>
+        <template v-if="hasReviewRating">
+          <UIcon name="i-lucide-star" class="size-4 fill-amber-400 text-amber-400" />
+          <span class="font-medium text-zinc-700">{{ product.averageRating }}</span>
+          <span class="text-zinc-300">•</span>
+          <span>{{ reviewCountLabel(reviewsCount) }}</span>
+        </template>
+        <template v-else>
+          <UIcon name="i-lucide-message-circle" class="size-4 text-zinc-300" />
+          <span class="font-medium text-zinc-500">Нет отзывов</span>
+        </template>
       </div>
 
       <UButton :color="inCart ? 'error' : isOutOfStock(product) ? 'neutral' : 'primary'"
@@ -122,6 +127,8 @@ const imageSizes = computed(() =>
     ? "(min-width: 640px) 160px, 50vw"
     : "(min-width: 1280px) 360px, (min-width: 1024px) 33vw, (min-width: 360px) 50vw, 100vw"
 );
+const reviewsCount = computed(() => props.product.reviewsCount ?? 0);
+const hasReviewRating = computed(() => reviewsCount.value > 0 && props.product.averageRating !== null && props.product.averageRating !== undefined);
 const cartButtonIcon = computed(() => {
   if (props.inCart) {
     return "i-lucide-trash-2";

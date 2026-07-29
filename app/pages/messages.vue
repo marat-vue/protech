@@ -101,7 +101,8 @@ type RealtimeEvent = MessageCreatedEvent | MessageReadEvent | { type: "connectio
 
 useSeoMeta({
   title: "Сообщения",
-  description: "Сообщения покупателя ПроТех76."
+  description: "Сообщения покупателя ПроТех76.",
+  robots: "noindex, nofollow"
 });
 
 const auth = useAuthStore();

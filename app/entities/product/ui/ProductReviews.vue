@@ -11,36 +11,49 @@
 
     <div class="grid items-start gap-6 lg:grid-cols-[360px_minmax(0,1fr)]">
       <aside class="rounded-4xl bg-[#f9fafb] p-6 shadow-sm shadow-zinc-950/5 lg:sticky lg:top-8 lg:h-90 lg:self-start">
-        <div class="flex items-end justify-between gap-4">
-          <div>
-            <p class="text-sm font-medium text-zinc-400">Средняя оценка</p>
-            <p class="mt-2 text-6xl font-semibold tracking-normal text-zinc-950 ">
-              {{ averageRatingLabel }}
-            </p>
-          </div>
-          <p class="pb-2 text-sm font-medium text-zinc-400">/ 5</p>
-        </div>
-
-        <div class="mt-5 flex gap-1 text-amber-400">
-          <UIcon v-for="rating in 5" :key="rating" name="i-lucide-star" class="size-5"
-            :class="rating <= roundedAverage ? 'fill-amber-400' : 'text-zinc-300 '" />
-        </div>
-
-        <div v-auto-animate class="mt-8 space-y-3">
-          <div v-for="item in ratingBreakdown" :key="item.rating"
-            class="grid grid-cols-[2rem_minmax(0,1fr)_2.5rem] items-center gap-3 text-sm">
-            <span class="font-medium text-zinc-500">{{ item.rating }}</span>
-            <div class="h-2 overflow-hidden rounded-full bg-white shadow-inner shadow-zinc-950/5 ">
-              <div class="h-full rounded-full bg-amber-400 transition-all duration-500"
-                :style="{ width: `${item.percent}%` }" />
+        <div v-if="hasReviews">
+          <div class="flex items-end justify-between gap-4">
+            <div>
+              <p class="text-sm font-medium text-zinc-400">Средняя оценка</p>
+              <p class="mt-2 text-6xl font-semibold tracking-normal text-zinc-950 ">
+                {{ averageRatingLabel }}
+              </p>
             </div>
-            <span class="text-right text-zinc-400">{{ item.count }}</span>
+            <p class="pb-2 text-sm font-medium text-zinc-400">/ 5</p>
           </div>
+
+          <div class="mt-5 flex gap-1 text-amber-400">
+            <UIcon v-for="rating in 5" :key="rating" name="i-lucide-star" class="size-5"
+              :class="rating <= roundedAverage ? 'fill-amber-400' : 'text-zinc-300 '" />
+          </div>
+
+          <div v-auto-animate class="mt-8 space-y-3">
+            <div v-for="item in ratingBreakdown" :key="item.rating"
+              class="grid grid-cols-[2rem_minmax(0,1fr)_2.5rem] items-center gap-3 text-sm">
+              <span class="font-medium text-zinc-500">{{ item.rating }}</span>
+              <div class="h-2 overflow-hidden rounded-full bg-white shadow-inner shadow-zinc-950/5 ">
+                <div class="h-full rounded-full bg-amber-400 transition-all duration-500"
+                  :style="{ width: `${item.percent}%` }" />
+              </div>
+              <span class="text-right text-zinc-400">{{ item.count }}</span>
+            </div>
+          </div>
+        </div>
+        <div v-else class="flex h-full min-h-48 flex-col justify-center">
+          <div class="grid size-12 place-items-center rounded-full bg-white text-zinc-400 shadow-sm shadow-zinc-950/5">
+            <UIcon name="i-lucide-message-circle"
+              class="size-6"
+            />
+          </div>
+          <p class="mt-5 text-lg font-semibold text-zinc-950">Нет отзывов</p>
+          <p class="mt-2 text-sm leading-6 text-zinc-500">
+            Оценка появится после первого отзыва о товаре.
+          </p>
         </div>
       </aside>
 
       <div class="space-y-5">
-        <div class="rounded-4xl bg-white/60 p-3 shadow-sm shadow-zinc-950/5  ">
+        <div v-if="hasReviews" class="rounded-4xl bg-white/60 p-3 shadow-sm shadow-zinc-950/5  ">
           <div class="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
             <div v-auto-animate class="flex flex-wrap gap-2">
               <button v-for="filter in ratingFilters" :key="filter.key" type="button"
@@ -202,7 +215,7 @@
             </div>
           </article>
 
-          <div v-if="!filteredReviews.length"
+          <div v-if="hasReviews && !filteredReviews.length"
             class="grid min-h-44 place-items-center rounded-4xl bg-[#f9fafb] px-6 text-center text-zinc-500 shadow-sm shadow-zinc-950/5   ">
             Отзывов с такой оценкой пока нет.
           </div>
@@ -303,6 +316,7 @@ const reviewPhotoModalUi = {
   body: "overflow-hidden p-3 sm:p-4"
 };
 const reviewTextareaUi = { base: "rounded-3xl bg-transparent" };
+const hasReviews = computed(() => props.reviews.length > 0);
 const reviewSummaryText = computed(() => props.reviews.length ? `${props.reviews.length} ${reviewNoun(props.reviews.length)} о товаре` : "Пока отзывов нет");
 const averageRating = computed(() => {
   if (!props.reviews.length) {

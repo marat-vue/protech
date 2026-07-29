@@ -138,7 +138,8 @@ import { useFavoritesStore } from "~~/app/stores/favorites";
 
 useSeoMeta({
   title: "Избранное",
-  description: "Избранные товары покупателя ПроТех76."
+  description: "Избранные товары покупателя ПроТех76.",
+  robots: "noindex, nofollow"
 });
 
 const auth = useAuthStore();

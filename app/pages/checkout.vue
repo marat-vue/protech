@@ -84,7 +84,8 @@ type CheckoutTextField = keyof Omit<CheckoutDraft, "obtainingMethod" | "paymentM
 
 useSeoMeta({
   title: "Оформление заказа",
-  description: "Оформление заказа ПроТех76 с выбором доставки, оплаты и адресом на карте."
+  description: "Оформление заказа ПроТех76 с выбором доставки, оплаты и адресом на карте.",
+  robots: "noindex, nofollow"
 });
 
 const auth = useAuthStore();

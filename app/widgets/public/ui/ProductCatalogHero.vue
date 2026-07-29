@@ -10,9 +10,3 @@
     </div>
   </section>
 </template>
-
-<script setup lang="ts">
-defineProps<{
-  cartTotal: number;
-}>();
-</script>

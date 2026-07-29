@@ -2,15 +2,15 @@
   <div class="-mx-4 grid gap-0 sm:mx-0 sm:gap-4 xl:gap-3"
     role="region"
     :aria-label="`Фотографии товара ${alt}`"
-    :class="imageItems.length > 1 ? 'xl:grid-cols-[76px_minmax(0,1fr)]' : ''"
+    :class="imageItems.length > 1 ? 'xl:grid-cols-[80px_minmax(0,1fr)]' : ''"
   >
     <div v-if="imageItems.length > 1"
       v-auto-animate
-      class="hidden gap-2 xl:order-1 xl:flex xl:max-h-160 xl:flex-col xl:overflow-y-auto xl:pr-1"
+      class="hidden gap-2 xl:order-1 xl:flex xl:max-h-160 xl:flex-col xl:overflow-y-auto xl:px-1"
     >
       <button v-for="(image, index) in imageItems"
         :key="image.url"
-        class="shrink-0 rounded-xl bg-[#f9fafb] p-1 shadow-sm shadow-zinc-950/5 transition duration-300 hover:-translate-y-0.5 hover:scale-[1.03] hover:bg-white hover:shadow-xl hover:shadow-zinc-950/10"
+        class="shrink-0 rounded-xl bg-[#f9fafb] p-1 shadow-sm shadow-zinc-950/5 ring-inset transition duration-300 hover:-translate-y-0.5 hover:scale-[1.03] hover:bg-white hover:shadow-xl hover:shadow-zinc-950/10"
         :class="index === selectedIndex ? 'scale-[1.03] bg-emerald-50 ring-2 ring-emerald-200' : 'ring-2 ring-transparent'"
         type="button"
         :aria-label="`Открыть фото ${index + 1}`"

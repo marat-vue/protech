@@ -1,7 +1,7 @@
 <template>
   <section id="catalog" aria-label="Фильтры каталога" role="search"
     class="scroll-mt-40 rounded-4xl bg-[#f9fafb]/90 p-2 shadow-[0_18px_60px_rgba(24,24,27,0.06)] backdrop-blur">
-    <div class="grid gap-3 md:grid-cols-[minmax(260px,1fr)_minmax(220px,280px)] xl:grid-cols-[minmax(280px,1fr)_minmax(210px,260px)_auto] xl:items-center">
+    <div class="grid gap-3 xl:grid-cols-[minmax(280px,1fr)_auto] xl:items-center">
       <UInput v-model="search" icon="i-lucide-search" variant="none" size="lg"
         placeholder="Найти товар, бренд или описание" class="w-full rounded-full bg-white shadow-sm shadow-zinc-950/5 "
         aria-label="Поиск по каталогу"
@@ -9,12 +9,7 @@
           base: 'h-12 rounded-full bg-transparent text-zinc-900 placeholder:text-zinc-400  ',
         }" />
 
-      <USelectMenu v-model="categoryId" :items="categoryItems" value-key="id" label-key="name" :search-input="false"
-        color="neutral" variant="none" size="lg" icon="i-lucide-layout-grid"
-        :aria-label="categoryAriaLabel"
-        class="min-w-0 rounded-full bg-white px-1 shadow-sm shadow-zinc-950/5 " :ui="selectUi" />
-
-      <div class="grid min-w-0 grid-cols-2 gap-2 md:col-span-2 md:grid-cols-[minmax(180px,220px)_repeat(3,minmax(130px,1fr))] xl:col-span-1 xl:flex xl:flex-nowrap xl:items-stretch xl:justify-end">
+      <div class="grid min-w-0 grid-cols-2 gap-2 md:grid-cols-[minmax(180px,220px)_repeat(3,minmax(130px,1fr))] xl:flex xl:flex-nowrap xl:items-stretch xl:justify-end">
         <USelectMenu v-model="sort" :items="sortOptions" value-key="value" label-key="label" :search-input="false"
           color="neutral" variant="none" size="lg" icon="i-lucide-arrow-up-down"
           :aria-label="sortAriaLabel"
@@ -53,14 +48,12 @@
 
 <script setup lang="ts">
 import type {
-  ProductCatalogCategoryItem,
   ProductCatalogSort,
   ProductCatalogSortOption
 } from "~~/app/shared/lib/catalogProductHelpers";
 
 const props = defineProps<{
   activeFilterCount: number;
-  categoryItems: ProductCatalogCategoryItem[];
   sortOptions: ProductCatalogSortOption[];
 }>();
 
@@ -69,25 +62,15 @@ defineEmits<{
 }>();
 
 const search = defineModel<string>("search", { required: true });
-const categoryId = defineModel<number | null>("categoryId", { required: true });
 const sort = defineModel<ProductCatalogSort>("sort", { required: true });
 const discountOnly = defineModel<boolean>("discountOnly", { required: true });
 const inStockOnly = defineModel<boolean>("inStockOnly", { required: true });
 
-const selectedCategoryLabel = computed(() =>
-  props.categoryItems.find((item) => item.id === categoryId.value)?.name ?? ""
-);
 const selectedSortLabel = computed(() =>
   props.sortOptions.find((item) => item.value === sort.value)?.label ?? ""
 );
-const categoryAriaLabel = computed(() => `${selectedCategoryLabel.value}, категория товара`);
 const sortAriaLabel = computed(() => `${selectedSortLabel.value}, сортировка товаров`);
 
-const selectUi = {
-  base: "h-12 rounded-full bg-transparent",
-  content: "rounded-2xl bg-white shadow-xl shadow-zinc-950/10 ring-0 ",
-  viewport: "p-1"
-};
 const sortUi = {
   base: "h-12 rounded-full bg-transparent",
   content: "rounded-2xl bg-white shadow-xl shadow-zinc-950/10 ring-0 ",

@@ -135,10 +135,10 @@
 
       <div v-if="filteredStocks.length" class="grid gap-3 bg-[#f9fafb] p-3 sm:grid-cols-2 sm:p-4 2xl:grid-cols-4">
         <article v-for="stock in filteredStocks" :key="stock.product.id"
-          class="rounded-[1.5rem] bg-white p-4 shadow-[0_18px_50px_rgba(24,24,27,0.08)] ring-1 ring-zinc-200/80 transition hover:-translate-y-0.5 hover:shadow-[0_24px_70px_rgba(24,24,27,0.12)]">
-          <div class="flex items-start justify-between gap-3">
+          class="flex h-full flex-col rounded-[1.5rem] bg-white p-4 shadow-[0_18px_50px_rgba(24,24,27,0.08)] ring-1 ring-zinc-200/80 transition hover:-translate-y-0.5 hover:shadow-[0_24px_70px_rgba(24,24,27,0.12)]">
+          <div class="flex min-h-[6.5rem] items-start justify-between gap-3">
             <div class="min-w-0">
-              <p class="line-clamp-2 font-semibold leading-6 text-zinc-950">
+              <p class="whitespace-normal break-words font-semibold leading-6 text-zinc-950">
                 {{ stock.product.name }}
               </p>
               <p class="mt-1 truncate text-xs font-medium uppercase text-zinc-400">
@@ -175,11 +175,15 @@
             </div>
           </div>
 
-          <UButton color="primary" variant="soft" icon="i-lucide-save"
-            class="mt-4 min-h-11 w-full justify-center rounded-full" :loading="savingId === stock.product.id"
-            :disabled="draftQuantities[stock.product.id] === stock.quantity" @click="saveStock(stock)">
-            Сохранить
-          </UButton>
+          <div class="mt-auto pt-4">
+            <UButton :color="isStockDirty(stock) ? 'success' : 'neutral'"
+              :variant="isStockDirty(stock) ? 'solid' : 'soft'" icon="i-lucide-save"
+              class="min-h-11 w-full justify-center rounded-full transition-all duration-200"
+              :class="isStockDirty(stock) ? 'shadow-lg shadow-emerald-950/20 ring-2 ring-emerald-200' : ''"
+              :loading="savingId === stock.product.id" :disabled="!isStockDirty(stock)" @click="saveStock(stock)">
+              Сохранить
+            </UButton>
+          </div>
         </article>
       </div>
 
@@ -315,6 +319,10 @@ function getArrivalCurrentQuantity(productId: number | undefined) {
 
 function getArrivalNextQuantity(item: ArrivalDraftItem) {
   return getArrivalCurrentQuantity(item.productId) + Math.max(0, Number(item.quantityDelta ?? 0));
+}
+
+function isStockDirty(stock: ProductStock) {
+  return Number(draftQuantities[stock.product.id]) !== stock.quantity;
 }
 
 async function submitArrival() {

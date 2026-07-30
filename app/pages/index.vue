@@ -6,10 +6,12 @@
       <ProductCollectionSpotlight :collections="collections" :selected-collection-id="ui.catalog.collectionId"
         @select="selectCollection" />
 
-      <ProductCatalogToolbar v-model:search="ui.catalog.search" v-model:category-id="ui.catalog.categoryId"
-        v-model:sort="ui.catalog.sort" v-model:discount-only="ui.catalog.discountOnly"
+      <ProductCatalogCategories v-model="ui.catalog.categoryId" :items="categoryItems" />
+
+      <ProductCatalogToolbar v-model:search="ui.catalog.search" v-model:sort="ui.catalog.sort"
+        v-model:discount-only="ui.catalog.discountOnly"
         v-model:in-stock-only="ui.catalog.inStockOnly" :active-filter-count="activeDrawerFilterCount"
-        :category-items="categoryItems" :sort-options="productCatalogSortOptions" @open-filters="openFilters" />
+        :sort-options="productCatalogSortOptions" @open-filters="openFilters" />
 
       <ProductCatalogActiveFilters :discount-only="ui.catalog.discountOnly" :has-any-filter="hasAnyFilter"
         :in-stock-only="ui.catalog.inStockOnly" :is-price-filtered="isPriceFiltered" :price-max="priceMax"

@@ -241,60 +241,80 @@
               :description="fieldErrors.productIds" />
 
             <div class="grid gap-4">
-              <div class="grid gap-3 rounded-2xl bg-[#f9fafb] p-3 shadow-inner shadow-zinc-950/5">
-                <div class="flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <p class="text-sm font-semibold text-zinc-950">
-                      Выбрано: {{ selectedProductIds.length }}
-                    </p>
-                    <p class="mt-1 text-xs text-zinc-500">
-                      Товар добавится в рубрику сразу после выбора.
-                    </p>
-                  </div>
-                  <UButton v-if="selectedProductIds.length" color="neutral" variant="ghost" size="sm"
-                    class="rounded-full text-zinc-500" @click="clearSelectedProducts">
+              <div class="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-[#f9fafb] p-3 shadow-inner shadow-zinc-950/5">
+                <div>
+                  <p class="text-sm font-semibold text-zinc-950">
+                    Добавлено товаров: {{ selectedProductIds.length }}
+                  </p>
+                  <p class="mt-1 text-xs leading-5 text-zinc-500">
+                    Создайте строку, затем найдите товар по названию или артикулу.
+                  </p>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                  <UButton v-if="productRows.length" color="neutral" variant="ghost" size="sm"
+                    class="rounded-full text-zinc-500" type="button" @click="clearSelectedProducts">
                     Очистить список
                   </UButton>
+                  <UButton color="primary" variant="soft" size="lg" type="button"
+                    class="min-h-11 rounded-full px-5" :disabled="productRows.length >= 100" @click="addProductRow">
+                    <Plus class="size-4" />
+                    Добавить товар
+                  </UButton>
                 </div>
-
-                <UFormField label="Найти и добавить товар">
-                  <USelectMenu :model-value="productToAddId" class="w-full rounded-2xl bg-white shadow-sm shadow-zinc-950/5"
-                    size="lg" color="neutral" variant="none" placeholder="Название или артикул товара"
-                    :items="availableProductSelectItems" value-key="id" label-key="label"
-                    :filter-fields="['name', 'article', 'label']" :search-input="{ placeholder: 'Поиск товара' }"
-                    :content="productSelectContent" :virtualize="{ estimateSize: 56 }" :loading="productOptionsPending"
-                    :ui="productSelectUi" @update:model-value="addSelectedProduct">
-                    <template #leading>
-                      <Search class="size-4 text-zinc-400" />
-                    </template>
-                    <template #empty>
-                      <span class="block px-3 py-6 text-center text-sm text-zinc-500">
-                        Все доступные товары уже выбраны
-                      </span>
-                    </template>
-                  </USelectMenu>
-                </UFormField>
               </div>
 
-              <div v-if="selectedProducts.length" class="grid gap-2">
-                <article v-for="(product, index) in selectedProducts" :key="product.id"
-                  class="grid grid-cols-[2rem_3.5rem_minmax(0,1fr)_auto] items-center gap-3 rounded-2xl bg-[#f9fafb] p-2 shadow-inner shadow-zinc-950/5 sm:grid-cols-[2.5rem_4rem_minmax(0,1fr)_auto]">
-                  <span class="grid size-8 place-items-center rounded-xl bg-white text-sm font-semibold text-zinc-500 shadow-sm shadow-zinc-950/5 sm:size-10">
-                    {{ index + 1 }}
-                  </span>
-                  <img :src="product.mainImage || '/favicon.ico'" :alt="product.name"
-                    class="aspect-square w-14 rounded-xl object-cover sm:w-16">
-                  <div class="min-w-0">
-                    <p class="line-clamp-1 text-sm font-semibold text-zinc-950">
-                      {{ product.name }}
-                    </p>
-                    <p class="mt-0.5 line-clamp-1 text-xs text-zinc-500">
-                      {{ product.article }} · {{ formatCurrency(product.currentPrice) }}
-                    </p>
+              <div v-if="productRows.length" class="grid gap-3">
+                <article v-for="(row, index) in productRows" :key="row.id"
+                  class="rounded-2xl bg-[#f9fafb] p-3 shadow-inner shadow-zinc-950/5">
+                  <div class="mb-3 flex items-center justify-between gap-3">
+                    <div class="flex items-center gap-3">
+                      <span class="grid size-9 place-items-center rounded-xl bg-white text-sm font-semibold text-zinc-500 shadow-sm shadow-zinc-950/5">
+                        {{ index + 1 }}
+                      </span>
+                      <div>
+                        <p class="text-sm font-semibold text-zinc-950">Товар рубрики</p>
+                        <p class="mt-0.5 text-xs text-zinc-500">Выберите одну позицию каталога</p>
+                      </div>
+                    </div>
+                    <UButton color="error" variant="ghost" icon="i-lucide-trash-2" square type="button"
+                      class="admin-touch-icon rounded-full bg-white shadow-sm shadow-zinc-950/5"
+                      aria-label="Удалить товар из рубрики" @click="removeProductRow(row.id)" />
                   </div>
-                  <UButton color="error" variant="ghost" icon="i-lucide-x" square
-                    class="admin-touch-icon rounded-full" aria-label="Убрать товар из рубрики"
-                    @click="removeSelectedProduct(product.id)" />
+
+                  <UFormField label="Товар">
+                    <USelectMenu :model-value="row.productId"
+                      class="w-full rounded-2xl bg-white shadow-sm shadow-zinc-950/5" size="xl" color="neutral"
+                      variant="none" placeholder="Выберите товар" :items="getProductSelectItems(row.productId)"
+                      value-key="id" label-key="label" :filter-fields="['name', 'article', 'label']"
+                      :search-input="{ placeholder: 'Поиск по названию или артикулу' }"
+                      :content="productSelectContent" :virtualize="{ estimateSize: 56 }"
+                      :loading="productOptionsPending" :ui="productSelectUi"
+                      @update:model-value="updateProductRow(row.id, $event)">
+                      <template #leading>
+                        <Search class="size-4 text-zinc-400" />
+                      </template>
+                      <template #empty>
+                        <span class="block px-3 py-6 text-center text-sm text-zinc-500">
+                          Подходящие товары не найдены
+                        </span>
+                      </template>
+                    </USelectMenu>
+                  </UFormField>
+
+                  <div v-if="row.productId"
+                    class="mt-3 grid grid-cols-[3.5rem_minmax(0,1fr)] items-center gap-3 rounded-2xl bg-white p-2 shadow-sm shadow-zinc-950/5">
+                    <img :src="productById.get(row.productId)?.mainImage || '/favicon.ico'"
+                      :alt="productById.get(row.productId)?.name || 'Товар'" class="aspect-square w-14 rounded-xl object-cover">
+                    <div class="min-w-0">
+                      <p class="whitespace-normal break-words text-sm font-semibold text-zinc-950">
+                        {{ productById.get(row.productId)?.name }}
+                      </p>
+                      <p class="mt-1 text-xs text-zinc-500">
+                        {{ productById.get(row.productId)?.article }} ·
+                        {{ formatCurrency(productById.get(row.productId)?.currentPrice ?? 0) }}
+                      </p>
+                    </div>
+                  </div>
                 </article>
               </div>
 
@@ -304,7 +324,7 @@
                   <span class="mx-auto grid size-11 place-items-center rounded-full bg-yellow-50 text-yellow-700">
                     <Plus class="size-5" />
                   </span>
-                  <span>Выберите первый товар через поиск выше</span>
+                  <span>Нажмите «Добавить товар», чтобы создать поле выбора</span>
                 </span>
               </div>
             </div>
@@ -362,6 +382,10 @@ type ProductSelectItem = ProductListItem & {
   description: string;
 };
 type ProductSelectValue = number | ProductSelectItem | undefined;
+type ProductDraftRow = {
+  id: number;
+  productId: number | undefined;
+};
 
 const page = ref(1);
 const search = ref("");
@@ -373,9 +397,9 @@ const loadingDetails = ref(false);
 const submitting = ref(false);
 const uploadingImage = ref(false);
 const imageInput = ref<HTMLInputElement | null>(null);
-const productToAddId = ref<number | undefined>();
-const selectedProductIds = ref<number[]>([]);
+const productRows = ref<ProductDraftRow[]>([]);
 const productSnapshots = ref<ProductListItem[]>([]);
+let productDraftId = 0;
 const fieldErrors = reactive<Record<string, string | undefined>>({});
 const form = reactive({
   title: "",
@@ -467,17 +491,12 @@ const productOptions = computed(() => {
   return Array.from(products.values());
 });
 const productById = computed(() => new Map(productOptions.value.map((product) => [product.id, product])));
+const selectedProductIds = computed(() =>
+  productRows.value
+    .map((row) => row.productId)
+    .filter((productId): productId is number => typeof productId === "number")
+);
 const selectedProductIdSet = computed(() => new Set(selectedProductIds.value));
-const selectedProducts = computed(() =>
-  selectedProductIds.value
-    .map((productId) => productById.value.get(productId))
-    .filter(isProductListItem)
-);
-const availableProductSelectItems = computed(() =>
-  productOptions.value
-    .filter((product) => !selectedProductIdSet.value.has(product.id))
-    .map(toProductSelectItem)
-);
 const editorTitle = computed(() => selectedCollectionId.value ? "Редактировать рубрику" : "Новая рубрика");
 const selectedStatusLabel = computed(() => {
   if (status.value === "all") {
@@ -518,8 +537,7 @@ function resetEditor() {
   form.image = "";
   form.sortOrder = 0;
   form.isActive = true;
-  productToAddId.value = undefined;
-  selectedProductIds.value = [];
+  productRows.value = [];
   productSnapshots.value = [];
   clearFieldErrors(fieldErrors);
 }
@@ -561,30 +579,55 @@ async function loadCollection(collectionId: number) {
 
 function setSelectedProducts(products: ProductListItem[]) {
   productSnapshots.value = products;
-  selectedProductIds.value = products.map((product) => product.id);
+  productRows.value = products.map((product) => ({
+    id: ++productDraftId,
+    productId: product.id
+  }));
 }
 
-function addSelectedProduct(value: ProductSelectValue) {
-  const productId = typeof value === "number" ? value : value?.id;
-
-  if (typeof productId !== "number" || selectedProductIdSet.value.has(productId)) {
-    productToAddId.value = undefined;
+function addProductRow() {
+  if (productRows.value.length >= 100) {
     return;
   }
 
-  selectedProductIds.value = [...selectedProductIds.value, productId];
-  productToAddId.value = undefined;
+  productRows.value.unshift({
+    id: ++productDraftId,
+    productId: undefined
+  });
   fieldErrors.productIds = undefined;
 }
 
-function removeSelectedProduct(productId: number) {
-  selectedProductIds.value = selectedProductIds.value.filter((selectedProductId) => selectedProductId !== productId);
+function updateProductRow(rowId: number, value: ProductSelectValue) {
+  const productId = typeof value === "number" ? value : value?.id;
+  const target = productRows.value.find((row) => row.id === rowId);
+
+  if (!target || typeof productId !== "number") {
+    return;
+  }
+
+  if (productRows.value.some((row) => row.id !== rowId && row.productId === productId)) {
+    toast.error("Этот товар уже добавлен в рубрику");
+    return;
+  }
+
+  target.productId = productId;
+  fieldErrors.productIds = undefined;
+}
+
+function removeProductRow(rowId: number) {
+  productRows.value = productRows.value.filter((row) => row.id !== rowId);
   fieldErrors.productIds = undefined;
 }
 
 function clearSelectedProducts() {
-  selectedProductIds.value = [];
+  productRows.value = [];
   fieldErrors.productIds = undefined;
+}
+
+function getProductSelectItems(currentProductId: number | undefined) {
+  return productOptions.value
+    .filter((product) => product.id === currentProductId || !selectedProductIdSet.value.has(product.id))
+    .map(toProductSelectItem);
 }
 
 function toProductSelectItem(product: ProductListItem): ProductSelectItem {
@@ -593,10 +636,6 @@ function toProductSelectItem(product: ProductListItem): ProductSelectItem {
     label: `${product.name} · ${product.article}`,
     description: formatCurrency(product.currentPrice)
   };
-}
-
-function isProductListItem(product: ProductListItem | undefined): product is ProductListItem {
-  return Boolean(product);
 }
 
 function openImagePicker() {
@@ -646,6 +685,12 @@ function buildPayload() {
 
 async function saveCollection() {
   if (submitting.value || loadingDetails.value) {
+    return;
+  }
+
+  if (productRows.value.some((row) => typeof row.productId !== "number")) {
+    fieldErrors.productIds = "Выберите товар в каждой добавленной строке";
+    toast.error("Выберите товары во всех строках");
     return;
   }
 

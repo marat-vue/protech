@@ -84,8 +84,8 @@
 
         <p class="text-center text-xs leading-5 text-zinc-400">
           Или позвоните нам:
-          <a class="font-semibold text-zinc-700 hover:text-(--shop-accent-strong)" href="tel:+79201309744">
-            +7 920 130-97-44
+          <a class="font-semibold text-zinc-700 hover:text-(--shop-accent-strong)" href="tel:+79201089344">
+            +7 920 108-93-44
           </a>
         </p>
       </form>

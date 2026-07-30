@@ -18,8 +18,8 @@
             >
               <img src="/logo.png" alt="Логотип ПроТех76" class="size-full object-contain">
             </span>
-            <span class="hidden min-w-0 leading-tight sm:block">
-              <span class="brand-wordmark block truncate text-sm font-semibold text-zinc-950 sm:text-lg">
+            <span class="min-w-0 leading-tight">
+              <span class="brand-wordmark block truncate text-lg font-semibold text-zinc-950 sm:text-lg">
                 ПроТех76
               </span>
               <span class="hidden text-[11px] text-zinc-500 lg:block">
@@ -66,7 +66,7 @@
               <UButton
                 color="neutral"
                 variant="ghost"
-                class="!h-11 shrink-0 rounded-full bg-[#f3f4f6] px-3 text-zinc-700 hover:bg-(--shop-accent-soft) hover:text-(--shop-accent-strong)"
+                class="hidden !h-11 shrink-0 rounded-full bg-[#f3f4f6] px-3 text-zinc-700 hover:bg-(--shop-accent-soft) hover:text-(--shop-accent-strong) sm:flex"
                 aria-label="Заказать звонок"
                 @click="openCallback"
               >
@@ -94,7 +94,7 @@
                 color="neutral"
                 variant="ghost"
                 :to="profileLink"
-                class="!size-11 shrink-0 justify-center rounded-full bg-[#f3f4f6] p-0 text-zinc-700"
+                class="hidden !size-11 shrink-0 justify-center rounded-full bg-[#f3f4f6] p-0 text-zinc-700 min-[360px]:flex"
                 :aria-label="auth.user ? 'Профиль и заказы' : 'Войти в профиль'"
               >
                 <img

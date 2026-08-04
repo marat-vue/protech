@@ -41,19 +41,69 @@ function getYooKassaApiUrl(event: H3Event) {
   return url.replace(/\/$/, "");
 }
 
-async function fetchYooKassa(event: H3Event, path: string, init: RequestInit) {
+async function fetchYooKassa(
+  event: H3Event,
+  path: string,
+  init: RequestInit
+) {
   const timeoutMs = getPositiveIntegerEnv("YOOKASSA_TIMEOUT_MS", 10_000, {
     min: 1_000,
     max: 60_000
   });
 
+  const url = `${getYooKassaApiUrl(event)}${path}`;
+  const method = init.method || "GET";
+
   try {
-    return await fetch(`${getYooKassaApiUrl(event)}${path}`, {
+    const response = await fetch(url, {
       ...init,
       signal: AbortSignal.timeout(timeoutMs)
     });
+
+    // clone() позволяет прочитать тело для логирования,
+    // не мешая последующему response.json() или response.text().
+    const rawBody = await response.clone().text();
+
+    let body: unknown = rawBody;
+
+    if (rawBody) {
+      try {
+        body = JSON.parse(rawBody);
+      } catch {
+        // Если ЮKassa вернула не JSON, выводим обычный текст.
+      }
+    } else {
+      body = null;
+    }
+
+    const responseLog = {
+      method,
+      url,
+      ok: response.ok,
+      status: response.status,
+      statusText: response.statusText,
+      headers: Object.fromEntries(response.headers.entries()),
+      body
+    };
+
+    if (response.ok) {
+      console.info("[YooKassa] Ответ получен:", responseLog);
+    } else {
+      console.error("[YooKassa] Ошибка ответа:", responseLog);
+    }
+
+    return response;
   } catch (error) {
-    if (error instanceof Error && error.name === "TimeoutError") {
+    console.error("[YooKassa] Ошибка запроса:", {
+      method,
+      url,
+      error
+    });
+
+    if (
+      error instanceof Error &&
+      (error.name === "TimeoutError" || error.name === "AbortError")
+    ) {
       throw createError({
         statusCode: 504,
         message: "ЮKassa не ответила вовремя"

@@ -60,8 +60,6 @@ async function fetchYooKassa(
       signal: AbortSignal.timeout(timeoutMs)
     });
 
-    // clone() позволяет прочитать тело для логирования,
-    // не мешая последующему response.json() или response.text().
     const rawBody = await response.clone().text();
 
     let body: unknown = rawBody;

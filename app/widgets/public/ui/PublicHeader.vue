@@ -55,10 +55,10 @@
 
           <div class="ml-auto flex shrink-0 items-center gap-1 sm:gap-1.5">
             <a
-              href="tel:+79201089344"
+              href="tel:+79201309744"
               class="hidden rounded-full px-3 py-2 text-right transition hover:bg-[#f9fafb] 2xl:block"
             >
-              <span class="block text-sm font-semibold text-zinc-950">+7 920 108-93-44</span>
+              <span class="block text-sm font-semibold text-zinc-950">+7 920 130-97-44</span>
               <span class="block text-[11px] text-zinc-500">Ежедневно, 9:00–18:00</span>
             </a>
 

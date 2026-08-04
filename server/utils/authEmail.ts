@@ -463,8 +463,8 @@ export async function sendEmailVerification({
     // });
     await sendYandexMail({
       to: user.email,
-      subject: "Тест отправки",
-      text: "Проверка работы почты."
+      subject: "Тест ссылки",
+      text: "Откройте страницу: https://протех76.рф"
     });
   } catch (error) {
     console.error("Failed to send verification email", {

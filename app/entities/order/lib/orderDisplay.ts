@@ -1,4 +1,4 @@
-import type { ObtainingMethod, OrderStatus, PaymentMethod, PaymentStatus } from "~~/app/shared/types/shop";
+import type { DeliveryMethod, ObtainingMethod, OrderStatus, PaymentMethod, PaymentStatus } from "~~/app/shared/types/shop";
 
 export type StatusMeta = {
   class: string;
@@ -82,6 +82,15 @@ export const obtainingMethodLabels: Record<ObtainingMethod, string> = {
   DELIVERY: "Доставка",
   PICKUP: "Самовывоз"
 };
+
+export const deliveryMethodLabels: Record<DeliveryMethod, string> = {
+  OZON: "Служба доставки OZON",
+  CDEK: "Служба доставки СДЭК"
+};
+
+export function getDeliveryMethodLabel(value: DeliveryMethod | null | undefined) {
+  return value ? deliveryMethodLabels[value] : "Служба доставки";
+}
 
 export function getStatusMeta(type: "order", value: OrderStatus): StatusMeta;
 export function getStatusMeta(type: "payment", value: PaymentStatus): StatusMeta;

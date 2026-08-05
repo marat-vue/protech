@@ -28,6 +28,7 @@
 
       <div class="mt-4 space-y-3 text-sm leading-6 text-zinc-500 ">
         <p class="font-semibold text-zinc-950">{{ order.delivery.address }}</p>
+        <p class="font-medium text-emerald-700">{{ getDeliveryMethodLabel(order.delivery.deliveryMethod) }}</p>
         <p v-if="order.delivery.apartment">Квартира: {{ order.delivery.apartment }}</p>
         <p v-if="order.delivery.entrance">Подъезд: {{ order.delivery.entrance }}</p>
         <p v-if="order.delivery.floor">Этаж: {{ order.delivery.floor }}</p>
@@ -44,6 +45,7 @@
 </template>
 
 <script setup lang="ts">
+import { getDeliveryMethodLabel } from "~~/app/entities/order/lib/orderDisplay";
 import { formatCurrency, formatDateTime } from "~~/app/shared/lib/shopFormatters";
 import type { ShopOrder } from "~~/app/shared/types/shop";
 
@@ -54,7 +56,7 @@ const props = defineProps<{
 const rows = computed(() => [
   {
     label: "Получение",
-    value: props.order.obtainingMethod === "DELIVERY" ? "Доставка OZON" : "Самовывоз"
+    value: props.order.obtainingMethod === "DELIVERY" ? getDeliveryMethodLabel(props.order.delivery?.deliveryMethod) : "Самовывоз"
   },
   {
     label: "Телефон",

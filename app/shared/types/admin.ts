@@ -161,6 +161,7 @@ export type OrderStatus =
 export type PaymentStatus = "PENDING" | "UPON_RECEIPT" | "PAID" | "CANCELLED";
 export type PaymentMethod = "OFFLINE" | "ONLINE";
 export type ObtainingMethod = "DELIVERY" | "PICKUP";
+export type DeliveryMethod = "OZON" | "CDEK";
 export type MessageSenderRole = "USER" | "ADMIN" | "SYSTEM";
 
 export type AdminMessage = {
@@ -218,7 +219,7 @@ export type OrderListItem = {
     floor: string | null;
     intercom: string | null;
     comment: string | null;
-    deliveryMethod?: "OZON";
+    deliveryMethod?: DeliveryMethod;
   } | null;
   orderItems: Array<{
     quantity: number;

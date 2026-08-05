@@ -58,10 +58,11 @@
 
 <script setup lang="ts">
 import { useDebounceFn } from "@vueuse/core";
-import type { ObtainingMethod } from "~~/app/shared/types/shop";
+import type { DeliveryMethod, ObtainingMethod } from "~~/app/shared/types/shop";
 
 const props = defineProps<{
   city: string;
+  deliveryMethod: DeliveryMethod;
   obtainingMethod: ObtainingMethod;
   street: string;
   house: string;
@@ -111,9 +112,10 @@ const badgeColor = computed(() => {
   if (isPickup.value || props.house.trim()) return "primary";
   return "neutral";
 });
+const deliveryMethodLabel = computed(() => props.deliveryMethod === "CDEK" ? "Доставка СДЭК" : "Доставка OZON");
 const badgeText = computed(() => {
   if (isPickup.value) return "Самовывоз";
-  return props.house.trim() ? "Доставка OZON" : "Уточняется";
+  return props.house.trim() ? deliveryMethodLabel.value : "Уточняется";
 });
 const mapTitle = computed(() => isPickup.value ? "Карта пункта самовывоза" : "Карта адреса доставки");
 

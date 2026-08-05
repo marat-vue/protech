@@ -10,8 +10,8 @@
           />
         </span>
         <div>
-          <h2 class="text-base font-semibold tracking-normal text-zinc-950">Адрес доставки OZON</h2>
-          <p class="mt-0.5 text-xs text-zinc-500">Служба доставки OZON привезет заказ по этому адресу.</p>
+          <h2 class="text-base font-semibold tracking-normal text-zinc-950">Адрес доставки</h2>
+          <p class="mt-0.5 text-xs text-zinc-500">{{ deliveryServiceLabel }} привезет заказ по этому адресу.</p>
         </div>
       </div>
 
@@ -19,7 +19,7 @@
         variant="soft"
         class="rounded-full bg-sky-50 px-3 py-1 text-sky-700"
       >
-        Служба доставки OZON
+        {{ deliveryServiceLabel }}
       </UBadge>
     </div>
 
@@ -148,13 +148,15 @@
 
 <script setup lang="ts">
 import type { CheckoutDraft } from "~~/app/stores/cart";
+import type { DeliveryMethod } from "~~/app/shared/types/shop";
 
 type CheckoutDraftField = keyof Pick<
   CheckoutDraft,
   "city" | "street" | "house" | "apartment" | "entrance" | "floor" | "intercom" | "comment"
 >;
 
-defineProps<{
+const props = defineProps<{
+  deliveryMethod: DeliveryMethod;
   draft: CheckoutDraft;
   fieldErrors: Record<string, string | undefined>;
   isDelivery: boolean;
@@ -166,4 +168,8 @@ const emit = defineEmits<{
 
 const inputUi = { base: "h-11 rounded-[1.1rem] bg-transparent text-sm" };
 const textareaUi = { base: "min-h-16 rounded-[1.1rem] bg-transparent text-sm" };
+
+const deliveryServiceLabel = computed(() => (
+  props.deliveryMethod === "CDEK" ? "Служба доставки СДЭК" : "Служба доставки OZON"
+));
 </script>

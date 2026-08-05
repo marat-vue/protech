@@ -1,9 +1,10 @@
 import { shopFetch } from "~~/app/shared/lib/shopFetch";
 import { toNumber } from "~~/app/shared/lib/shopFormatters";
-import type { CartItem, ObtainingMethod, PaymentMethod } from "~~/app/shared/types/shop";
+import type { CartItem, DeliveryMethod, ObtainingMethod, PaymentMethod } from "~~/app/shared/types/shop";
 
 export type CheckoutDraft = {
   obtainingMethod: ObtainingMethod;
+  deliveryMethod: DeliveryMethod;
   paymentMethod: PaymentMethod;
   customerPhone: string;
   recipientIsAnotherPerson: boolean;
@@ -22,6 +23,7 @@ export type CheckoutDraft = {
 function createCheckoutDraft(): CheckoutDraft {
   return {
     obtainingMethod: "DELIVERY",
+    deliveryMethod: "OZON",
     paymentMethod: "ONLINE",
     customerPhone: "",
     recipientIsAnotherPerson: false,

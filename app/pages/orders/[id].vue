@@ -99,6 +99,7 @@
 
 <script setup lang="ts">
 import { toast } from "vue-sonner";
+import { getDeliveryMethodLabel } from "~~/app/entities/order/lib/orderDisplay";
 import { formatCurrency, formatDateTime, getErrorMessage } from "~~/app/shared/lib/shopFormatters";
 import { shopFetch } from "~~/app/shared/lib/shopFetch";
 import type { OrderStatus, ShopOrder } from "~~/app/shared/types/shop";
@@ -128,7 +129,7 @@ const detailMetrics = computed(() => {
     {
       icon: "i-lucide-truck",
       label: "Получение",
-      value: order.value.obtainingMethod === "DELIVERY" ? "Доставка OZON" : "Самовывоз"
+      value: order.value.obtainingMethod === "DELIVERY" ? getDeliveryMethodLabel(order.value.delivery?.deliveryMethod) : "Самовывоз"
     },
     {
       icon: "i-lucide-phone",

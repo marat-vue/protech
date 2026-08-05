@@ -138,6 +138,7 @@ export type AttributeFilter = {
 
 export type ObtainingMethod = "DELIVERY" | "PICKUP";
 export type PaymentMethod = "OFFLINE" | "ONLINE";
+export type DeliveryMethod = "OZON" | "CDEK";
 export type OrderStatus = "NEW" | "CONFIRMED" | "PROCESSING" | "SHIPPED" | "COMPLETED" | "CANCELLED";
 export type PaymentStatus = "PENDING" | "UPON_RECEIPT" | "PAID" | "CANCELLED";
 export type MessageSenderRole = "USER" | "ADMIN" | "SYSTEM";
@@ -185,7 +186,7 @@ export type ShopOrder = {
     floor: string | null;
     intercom: string | null;
     comment: string | null;
-    deliveryMethod: "OZON";
+    deliveryMethod: DeliveryMethod;
   } | null;
   payment: {
     amount: MoneyLike;

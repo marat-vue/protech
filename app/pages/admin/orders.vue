@@ -183,6 +183,9 @@
                   <p v-if="deliveryDetails(order)" class="mt-1 text-xs leading-5 text-(--admin-text-muted)">
                     {{ deliveryDetails(order) }}
                   </p>
+                  <p class="mt-2 text-xs font-medium text-emerald-700">
+                    {{ deliveryServiceLabel(order) }}
+                  </p>
                 </template>
                 <template v-else>
                   <p class="mt-2 text-sm font-semibold leading-6 text-zinc-950">
@@ -377,6 +380,7 @@ import {
   formatCurrency,
   formatDate,
   formatNumber,
+  getDeliveryMethodLabel,
   getErrorMessage,
   obtainingMethodLabels,
   orderStatusLabels,
@@ -487,9 +491,7 @@ function deliveryDetails(order: OrderListItem) {
 }
 
 function deliveryServiceLabel(order: OrderListItem) {
-  return order.delivery?.deliveryMethod === "OZON"
-    ? "Служба доставки OZON"
-    : "Служба доставки не указана";
+  return getDeliveryMethodLabel(order.delivery?.deliveryMethod);
 }
 
 async function updateOrderStatus(order: OrderListItem, value: unknown) {

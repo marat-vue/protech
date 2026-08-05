@@ -34,16 +34,17 @@
           @update-recipient-name="updateCheckoutField('recipientName', $event)"
           @update-recipient-phone="updateCheckoutField('recipientPhone', $event)" />
 
-        <CheckoutChoiceGroupsSection :obtaining-method="draft.obtainingMethod" :obtaining-options="obtainingOptions"
-          :payment-method="draft.paymentMethod" :payment-options="paymentOptions" @select-obtaining="setObtainingMethod"
-          @select-payment="setPaymentMethod" />
-        <CheckoutDeliveryDetailsSection :draft="draft" :field-errors="fieldErrors" :is-delivery="isDelivery"
-          @update-field="updateCheckoutField" />
+        <CheckoutChoiceGroupsSection :delivery-method="draft.deliveryMethod" :delivery-options="deliveryOptions"
+          :is-delivery="isDelivery" :obtaining-method="draft.obtainingMethod" :obtaining-options="obtainingOptions"
+          :payment-method="draft.paymentMethod" :payment-options="paymentOptions" @select-delivery="setDeliveryMethod"
+          @select-obtaining="setObtainingMethod" @select-payment="setPaymentMethod" />
+        <CheckoutDeliveryDetailsSection :delivery-method="draft.deliveryMethod" :draft="draft"
+          :field-errors="fieldErrors" :is-delivery="isDelivery" @update-field="updateCheckoutField" />
       </div>
 
       <aside class="space-y-4 lg:sticky lg:top-28 lg:self-start">
-        <CheckoutDeliveryMap :city="draft.city" :house="draft.house" :obtaining-method="draft.obtainingMethod"
-          :street="draft.street" />
+        <CheckoutDeliveryMap :city="draft.city" :delivery-method="draft.deliveryMethod" :house="draft.house"
+          :obtaining-method="draft.obtainingMethod" :street="draft.street" />
 
         <CheckoutSubmitPanel :delivery-label="deliveryLabel" :hidden-items-count="hiddenCheckoutItemsCount"
           :preview-items="checkoutPreviewItems" :submit-error="submitError" :submitting="submitting"
@@ -57,7 +58,7 @@
 import { toast } from "vue-sonner";
 import { getErrorMessage } from "~~/app/shared/lib/shopFormatters";
 import { shopFetch } from "~~/app/shared/lib/shopFetch";
-import type { ObtainingMethod, PaymentMethod } from "~~/app/shared/types/shop";
+import type { DeliveryMethod, ObtainingMethod, PaymentMethod } from "~~/app/shared/types/shop";
 import { useAuthStore } from "~~/app/stores/auth";
 import { useCartStore, type CheckoutDraft } from "~~/app/stores/cart";
 
@@ -80,7 +81,7 @@ type CheckoutChoice<TValue extends string> = {
   badge?: string;
   disabled?: boolean;
 };
-type CheckoutTextField = keyof Omit<CheckoutDraft, "obtainingMethod" | "paymentMethod" | "recipientIsAnotherPerson">;
+type CheckoutTextField = keyof Omit<CheckoutDraft, "deliveryMethod" | "obtainingMethod" | "paymentMethod" | "recipientIsAnotherPerson">;
 
 useSeoMeta({
   title: "Оформление заказа",
@@ -98,8 +99,8 @@ const fieldErrors = reactive<Record<string, string | undefined>>({});
 const obtainingOptions: Array<CheckoutChoice<ObtainingMethod>> = [
   {
     value: "DELIVERY",
-    title: "Доставка OZON",
-    description: "Служба доставки OZON привезет заказ по указанному адресу.",
+    title: "Доставка",
+    description: "Курьерская доставка OZON или СДЭК по указанному адресу.",
     icon: "i-lucide-truck"
   },
   {
@@ -111,7 +112,26 @@ const obtainingOptions: Array<CheckoutChoice<ObtainingMethod>> = [
 ];
 
 const isDelivery = computed(() => draft.obtainingMethod === "DELIVERY");
-const deliveryLabel = computed(() => isDelivery.value ? "служба доставки OZON" : "самовывоз");
+const deliveryOptions: Array<CheckoutChoice<DeliveryMethod>> = [
+  {
+    value: "OZON",
+    title: "OZON",
+    description: "Доставка через службу OZON по адресу заказа.",
+    icon: "i-lucide-truck"
+  },
+  {
+    value: "CDEK",
+    title: "СДЭК",
+    description: "Доставка через СДЭК по адресу заказа.",
+    icon: "i-lucide-package-check"
+  }
+];
+const deliveryMethodLabels: Record<DeliveryMethod, string> = {
+  OZON: "служба доставки OZON",
+  CDEK: "служба доставки СДЭК"
+};
+const selectedDeliveryLabel = computed(() => deliveryMethodLabels[draft.deliveryMethod] ?? deliveryMethodLabels.OZON);
+const deliveryLabel = computed(() => isDelivery.value ? selectedDeliveryLabel.value : "самовывоз");
 const customerPhone = computed(() => (draft.customerPhone ?? "").trim());
 const recipientName = computed(() => (draft.recipientName ?? "").trim());
 const recipientPhone = computed(() => (draft.recipientPhone ?? "").trim());
@@ -135,6 +155,7 @@ const paymentOptions = computed<Array<CheckoutChoice<PaymentMethod>>>(() => [
 ]);
 
 onMounted(async () => {
+  draft.deliveryMethod = draft.deliveryMethod ?? "OZON";
   draft.customerPhone = draft.customerPhone ?? "";
   draft.recipientIsAnotherPerson = draft.recipientIsAnotherPerson ?? false;
   draft.recipientName = draft.recipientName ?? "";
@@ -154,7 +175,12 @@ function setObtainingMethod(value: ObtainingMethod) {
 
   if (value === "DELIVERY") {
     draft.paymentMethod = "ONLINE";
+    draft.deliveryMethod = draft.deliveryMethod ?? "OZON";
   }
+}
+
+function setDeliveryMethod(value: DeliveryMethod) {
+  draft.deliveryMethod = value;
 }
 
 function setPaymentMethod(value: PaymentMethod) {
@@ -270,7 +296,7 @@ async function submitOrder() {
               floor: draft.floor.trim() || undefined,
               intercom: draft.intercom.trim() || undefined,
               comment: draft.comment.trim() || undefined,
-              deliveryMethod: "OZON"
+              deliveryMethod: draft.deliveryMethod
             }
           }
           : {})

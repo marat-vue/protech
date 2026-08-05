@@ -62,7 +62,7 @@ const deliveryDetailsSchema = z.strictObject({
 	intercom: z.string().trim().max(50).optional(),
 	comment: z.string().trim().max(1000).optional(),
 
-	deliveryMethod: z.enum(["OZON"]).default("OZON")
+	deliveryMethod: z.enum(["OZON", "CDEK"]).default("OZON")
 });
 
 export const createOrderSchema = z.discriminatedUnion("obtainingMethod", [

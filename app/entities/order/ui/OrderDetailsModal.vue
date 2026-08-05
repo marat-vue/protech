@@ -25,6 +25,7 @@
 <script setup lang="ts">
 import {
   getStatusMeta,
+  getDeliveryMethodLabel,
   obtainingMethodLabels,
   paymentMethodLabels
 } from "~~/app/entities/order/lib/orderDisplay";
@@ -294,7 +295,7 @@ const receivingRows = computed<InfoRow[]>(() => {
   rows.push(
     {
       label: "Служба",
-      value: order.value.delivery.deliveryMethod === "OZON" ? "Служба доставки OZON" : order.value.delivery.deliveryMethod
+      value: getDeliveryMethodLabel(order.value.delivery.deliveryMethod)
     },
     {
       label: "Адрес",

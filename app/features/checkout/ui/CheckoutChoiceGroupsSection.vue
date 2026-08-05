@@ -1,6 +1,6 @@
 <template>
   <section class="rounded-[1.75rem] bg-white/90 p-4 shadow-[0_18px_70px_rgba(15,23,42,0.06)] sm:p-5  ">
-    <div class="grid gap-5 xl:grid-cols-2">
+    <div class="grid gap-5" :class="isDelivery ? 'xl:grid-cols-3' : 'xl:grid-cols-2'">
       <div>
         <div class="flex items-center gap-2">
           <span class="grid size-9 place-items-center rounded-full bg-emerald-50 text-emerald-700  ">
@@ -30,6 +30,42 @@
               <span class="mt-0.5 block text-xs leading-4 text-zinc-500">{{ option.description }}</span>
             </span>
             <UIcon v-if="obtainingMethod === option.value"
+              name="i-lucide-check"
+              class="absolute right-3 top-3 size-4 text-emerald-600"
+            />
+          </button>
+        </div>
+      </div>
+
+      <div v-if="isDelivery">
+        <div class="flex items-center gap-2">
+          <span class="grid size-9 place-items-center rounded-full bg-sky-50 text-sky-700  ">
+            <UIcon name="i-lucide-truck"
+              class="size-4.5"
+            />
+          </span>
+          <h2 id="checkout-delivery-heading" class="text-base font-semibold tracking-normal text-zinc-950">Служба</h2>
+        </div>
+
+        <div class="mt-3 grid gap-2" role="radiogroup" aria-labelledby="checkout-delivery-heading">
+          <button v-for="option in deliveryOptions"
+            :key="option.value"
+            type="button"
+            role="radio"
+            :aria-checked="deliveryMethod === option.value"
+            :class="choiceButtonClass(deliveryMethod === option.value)"
+            @click="emit('selectDelivery', option.value)"
+          >
+            <span :class="choiceIconClass(deliveryMethod === option.value)">
+              <UIcon :name="option.icon"
+                class="size-4.5"
+              />
+            </span>
+            <span class="min-w-0">
+              <span class="block text-sm font-semibold text-zinc-950">{{ option.title }}</span>
+              <span class="mt-0.5 block text-xs leading-4 text-zinc-500">{{ option.description }}</span>
+            </span>
+            <UIcon v-if="deliveryMethod === option.value"
               name="i-lucide-check"
               class="absolute right-3 top-3 size-4 text-emerald-600"
             />
@@ -86,7 +122,7 @@
 </template>
 
 <script setup lang="ts">
-import type { ObtainingMethod, PaymentMethod } from "~~/app/shared/types/shop";
+import type { DeliveryMethod, ObtainingMethod, PaymentMethod } from "~~/app/shared/types/shop";
 
 type CheckoutChoice<TValue extends string> = {
   badge?: string;
@@ -98,6 +134,9 @@ type CheckoutChoice<TValue extends string> = {
 };
 
 defineProps<{
+  deliveryMethod: DeliveryMethod;
+  deliveryOptions: Array<CheckoutChoice<DeliveryMethod>>;
+  isDelivery: boolean;
   obtainingMethod: ObtainingMethod;
   obtainingOptions: Array<CheckoutChoice<ObtainingMethod>>;
   paymentMethod: PaymentMethod;
@@ -105,6 +144,7 @@ defineProps<{
 }>();
 
 const emit = defineEmits<{
+  selectDelivery: [value: DeliveryMethod];
   selectObtaining: [value: ObtainingMethod];
   selectPayment: [value: PaymentMethod];
 }>();

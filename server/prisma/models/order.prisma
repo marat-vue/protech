@@ -67,6 +67,7 @@ model OrderItem {
 
 enum DeliveryMethod {
     OZON
+    CDEK
 }
 
 model Delivery {

@@ -1,5 +1,6 @@
 import type {
   CallbackRequestStatus,
+  DeliveryMethod,
   MoneyLike,
   ObtainingMethod,
   OrderStatus,
@@ -49,6 +50,15 @@ export const obtainingMethodLabels: Record<ObtainingMethod, string> = {
   DELIVERY: "Доставка",
   PICKUP: "Самовывоз"
 };
+
+export const deliveryMethodLabels: Record<DeliveryMethod, string> = {
+  OZON: "Служба доставки OZON",
+  CDEK: "Служба доставки СДЭК"
+};
+
+export function getDeliveryMethodLabel(value: DeliveryMethod | null | undefined) {
+  return value ? deliveryMethodLabels[value] : "Служба доставки не указана";
+}
 
 export const orderStatusColor: Record<OrderStatus, "neutral" | "primary" | "warning" | "success" | "error" | "info"> = {
   NEW: "info",

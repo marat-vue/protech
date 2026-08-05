@@ -12,6 +12,11 @@ type RegisterPayload = LoginPayload & {
   name: string;
 };
 
+type VerifyEmailCodePayload = {
+  email: string;
+  otp: string;
+};
+
 export const useAuthStore = defineStore("shop-auth", {
   state: () => ({
     user: null as ShopUser | null,
@@ -74,6 +79,40 @@ export const useAuthStore = defineStore("shop-auth", {
         });
 
         this.lastEmail = payload.email;
+      } finally {
+        this.pending = false;
+      }
+    },
+    async verifyEmailCode(payload: VerifyEmailCodePayload) {
+      this.pending = true;
+
+      try {
+        await $fetch("/api/auth/email-otp/verify-email", {
+          method: "POST",
+          credentials: "include",
+          body: payload
+        });
+
+        this.lastEmail = payload.email;
+        await this.fetchMe();
+      } finally {
+        this.pending = false;
+      }
+    },
+    async resendVerificationCode(email: string) {
+      this.pending = true;
+
+      try {
+        await $fetch("/api/auth/email-otp/send-verification-otp", {
+          method: "POST",
+          credentials: "include",
+          body: {
+            email,
+            type: "email-verification"
+          }
+        });
+
+        this.lastEmail = email;
       } finally {
         this.pending = false;
       }

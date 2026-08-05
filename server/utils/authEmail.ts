@@ -8,6 +8,12 @@ type VerificationEmailInput = {
   };
 };
 
+type VerificationCodeEmailInput = {
+  email: string;
+  otp: string;
+  type?: "sign-in" | "email-verification" | "forget-password" | "change-email";
+};
+
 function escapeHtml(value: string): string {
   return value
     .replaceAll("&", "&amp;")
@@ -22,6 +28,185 @@ export function normalizeEmailUrl(value: string): string {
     return new URL(value).toString();
   } catch {
     return value;
+  }
+}
+
+export async function sendEmailVerificationCode({
+  email,
+  otp,
+  type = "email-verification"
+}: VerificationCodeEmailInput): Promise<void> {
+  const brandName = "ПроТех76";
+  const currentYear = new Date().getFullYear();
+  const safeEmail = escapeHtml(email);
+  const safeOtp = escapeHtml(otp);
+  const subject = type === "email-verification"
+    ? `Код подтверждения email — ${brandName}`
+    : `Код безопасности — ${brandName}`;
+
+  const text = [
+    `Код подтверждения ${brandName}:`,
+    "",
+    otp,
+    "",
+    "Введите этот 6-значный код на странице регистрации или входа.",
+    "Код действует 10 минут.",
+    "",
+    "Если вы не запрашивали код, просто проигнорируйте это письмо.",
+    "",
+    `С уважением, команда ${brandName}`
+  ].join("\n");
+
+  const html = `
+    <!doctype html>
+    <html lang="ru">
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="x-apple-disable-message-reformatting">
+        <meta name="format-detection" content="telephone=no,date=no,address=no,email=no">
+        <title>${escapeHtml(subject)}</title>
+      </head>
+
+      <body
+        style="
+          margin:0;
+          padding:0;
+          background-color:#f4f7f6;
+          color:#18181b;
+          font-family:Arial,Helvetica,sans-serif;
+          -webkit-font-smoothing:antialiased;
+        "
+      >
+        <table
+          role="presentation"
+          width="100%"
+          cellspacing="0"
+          cellpadding="0"
+          border="0"
+          style="width:100%;background-color:#f4f7f6"
+        >
+          <tr>
+            <td align="center" style="padding:40px 16px">
+              <table
+                role="presentation"
+                width="560"
+                cellspacing="0"
+                cellpadding="0"
+                border="0"
+                style="
+                  width:560px;
+                  max-width:100%;
+                  background-color:#ffffff;
+                  border:1px solid #e4e4e7;
+                  border-radius:18px;
+                  overflow:hidden;
+                  box-shadow:0 12px 32px rgba(24,24,27,0.08);
+                "
+              >
+                <tr>
+                  <td style="padding:28px 40px;background-color:#064e3b;color:#ffffff">
+                    <div style="font-size:22px;line-height:28px;font-weight:700">
+                      ${brandName}
+                    </div>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td style="padding:40px 40px 20px">
+                    <h1
+                      style="
+                        margin:0 0 16px;
+                        color:#18181b;
+                        font-size:28px;
+                        line-height:36px;
+                        font-weight:700;
+                      "
+                    >
+                      Код подтверждения email
+                    </h1>
+
+                    <p
+                      style="
+                        margin:0;
+                        color:#52525b;
+                        font-size:16px;
+                        line-height:26px;
+                      "
+                    >
+                      Введите этот код на странице регистрации или входа.
+                    </p>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td style="padding:12px 40px 28px">
+                    <div
+                      style="
+                        display:inline-block;
+                        padding:18px 24px;
+                        border-radius:14px;
+                        background-color:#f4f4f5;
+                        color:#064e3b;
+                        font-size:34px;
+                        line-height:40px;
+                        font-weight:700;
+                        letter-spacing:6px;
+                      "
+                    >
+                      ${safeOtp}
+                    </div>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td style="padding:0 40px 40px">
+                    <p
+                      style="
+                        margin:0 0 12px;
+                        color:#71717a;
+                        font-size:14px;
+                        line-height:22px;
+                      "
+                    >
+                      Код действует 10 минут. Если вы не запрашивали код, просто проигнорируйте это письмо.
+                    </p>
+
+                    <p
+                      style="
+                        margin:0;
+                        color:#a1a1aa;
+                        font-size:12px;
+                        line-height:19px;
+                      "
+                    >
+                      Письмо отправлено на адрес ${safeEmail}.<br>
+                      © ${currentYear} ${brandName}. Все права защищены.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+    </html>
+  `;
+
+  try {
+    await sendYandexMail({
+      to: email,
+      subject,
+      text,
+      html
+    });
+  } catch (error) {
+    console.error("Failed to send verification code email", {
+      email,
+      error
+    });
+
+    throw error;
   }
 }
 

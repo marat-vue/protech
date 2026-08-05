@@ -1,7 +1,7 @@
 <template>
-  <div class="min-h-screen bg-[#f9fafb] text-zinc-950  ">
+  <div class="min-h-screen bg-[#f9fafb] pb-24 text-zinc-950 md:pb-0  ">
     <div v-if="loading"
-      class="mx-auto grid w-full max-w-370 gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[minmax(0,0.82fr)_minmax(460px,1.18fr)] lg:px-8 lg:py-10">
+      class="mx-auto grid w-full max-w-370 gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[minmax(0,1.05fr)_minmax(420px,0.95fr)] lg:px-8 lg:py-10">
       <USkeleton class="h-144 rounded-4xl" />
       <USkeleton class="h-[calc(100vh-8rem)] min-h-155 rounded-4xl" />
     </div>
@@ -21,7 +21,7 @@
     </div>
 
     <div v-else
-      class="mx-auto grid w-full max-w-370 gap-5 px-4 py-6 sm:px-6 lg:grid-cols-[minmax(0,0.82fr)_minmax(460px,1.18fr)] lg:px-8 lg:py-8 xl:gap-6">
+      class="mx-auto grid w-full max-w-370 gap-5 px-4 py-6 sm:px-6 lg:grid-cols-[minmax(0,1.05fr)_minmax(420px,0.95fr)] lg:px-8 lg:py-8 xl:gap-6">
       <div v-auto-animate class="space-y-4 lg:pb-8">
         <CheckoutOverviewCard />
 

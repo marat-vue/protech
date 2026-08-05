@@ -1,17 +1,37 @@
 <template>
   <section class="rounded-[1.75rem] bg-white/90 p-4 shadow-[0_18px_70px_rgba(15,23,42,0.06)] sm:p-5  ">
-    <div class="grid gap-5" :class="isDelivery ? 'xl:grid-cols-3' : 'xl:grid-cols-2'">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <span class="grid size-10 place-items-center rounded-full bg-emerald-50 text-emerald-700  ">
+          <UIcon name="i-lucide-route"
+            class="size-5"
+          />
+        </span>
+        <div>
+          <h2 class="text-base font-semibold tracking-normal text-zinc-950">Получение и оплата</h2>
+          <p class="mt-0.5 text-xs leading-5 text-zinc-500">Выберите способ получения, службу доставки и оплату.</p>
+        </div>
+      </div>
+
+      <UBadge v-if="isDelivery"
+        color="primary"
+        variant="soft"
+        class="rounded-full px-3 py-1"
+      >
+        {{ deliveryMethod === "CDEK" ? "СДЭК" : "OZON" }}
+      </UBadge>
+    </div>
+
+    <div class="mt-5 space-y-5">
       <div>
-        <div class="flex items-center gap-2">
-          <span class="grid size-9 place-items-center rounded-full bg-emerald-50 text-emerald-700  ">
-            <UIcon name="i-lucide-truck"
-              class="size-4.5"
-            />
-          </span>
-          <h2 id="checkout-obtaining-heading" class="text-base font-semibold tracking-normal text-zinc-950">Получение</h2>
+        <div class="flex items-center gap-2 px-1">
+          <UIcon name="i-lucide-truck"
+            class="size-4.5 text-emerald-700"
+          />
+          <h3 id="checkout-obtaining-heading" class="text-sm font-semibold tracking-normal text-zinc-950">Получение</h3>
         </div>
 
-        <div class="mt-3 grid gap-2" role="radiogroup" aria-labelledby="checkout-obtaining-heading">
+        <div class="mt-3 grid gap-3 sm:grid-cols-2" role="radiogroup" aria-labelledby="checkout-obtaining-heading">
           <button v-for="option in obtainingOptions"
             :key="option.value"
             type="button"
@@ -37,17 +57,15 @@
         </div>
       </div>
 
-      <div v-if="isDelivery">
-        <div class="flex items-center gap-2">
-          <span class="grid size-9 place-items-center rounded-full bg-sky-50 text-sky-700  ">
-            <UIcon name="i-lucide-truck"
-              class="size-4.5"
-            />
-          </span>
-          <h2 id="checkout-delivery-heading" class="text-base font-semibold tracking-normal text-zinc-950">Служба</h2>
+      <div v-if="isDelivery" class="border-t border-zinc-100 pt-5">
+        <div class="flex items-center gap-2 px-1">
+          <UIcon name="i-lucide-package-check"
+            class="size-4.5 text-sky-700"
+          />
+          <h3 id="checkout-delivery-heading" class="text-sm font-semibold tracking-normal text-zinc-950">Служба доставки</h3>
         </div>
 
-        <div class="mt-3 grid gap-2" role="radiogroup" aria-labelledby="checkout-delivery-heading">
+        <div class="mt-3 grid gap-3 sm:grid-cols-2" role="radiogroup" aria-labelledby="checkout-delivery-heading">
           <button v-for="option in deliveryOptions"
             :key="option.value"
             type="button"
@@ -73,17 +91,15 @@
         </div>
       </div>
 
-      <div>
-        <div class="flex items-center gap-2">
-          <span class="grid size-9 place-items-center rounded-full bg-zinc-100 text-zinc-700  ">
-            <UIcon name="i-lucide-credit-card"
-              class="size-4.5"
-            />
-          </span>
-          <h2 id="checkout-payment-heading" class="text-base font-semibold tracking-normal text-zinc-950">Оплата</h2>
+      <div class="border-t border-zinc-100 pt-5">
+        <div class="flex items-center gap-2 px-1">
+          <UIcon name="i-lucide-credit-card"
+            class="size-4.5 text-zinc-700"
+          />
+          <h3 id="checkout-payment-heading" class="text-sm font-semibold tracking-normal text-zinc-950">Оплата</h3>
         </div>
 
-        <div class="mt-3 grid gap-2" role="radiogroup" aria-labelledby="checkout-payment-heading">
+        <div class="mt-3 grid gap-3 sm:grid-cols-2" role="radiogroup" aria-labelledby="checkout-payment-heading">
           <button v-for="option in paymentOptions"
             :key="option.value"
             type="button"
@@ -100,7 +116,7 @@
               />
             </span>
             <span class="min-w-0">
-              <span class="flex items-center gap-2">
+              <span class="flex flex-wrap items-center gap-x-2 gap-y-1">
                 <span class="text-sm font-semibold text-zinc-950">{{ option.title }}</span>
                 <span v-if="option.badge"
                   class="rounded-full bg-white px-2 py-0.5 text-[10px] font-semibold text-zinc-500 shadow-sm shadow-zinc-950/5  "
@@ -151,17 +167,17 @@ const emit = defineEmits<{
 
 function choiceButtonClass(active: boolean, disabled = false) {
   return [
-    "group relative flex min-h-[5rem] gap-2.5 rounded-[1.25rem] p-3 text-left shadow-sm transition duration-300",
+    "group relative flex min-h-[6.5rem] w-full items-start gap-3 rounded-[1.25rem] p-4 pr-10 text-left ring-1 transition duration-300",
     active
-      ? "bg-yellow-50 shadow-[inset_0_0_0_1px_rgba(250,204,21,0.30),0_18px_50px_rgba(161,98,7,0.10)] "
-      : "bg-[#f9fafb] shadow-zinc-950/5 hover:-translate-y-0.5 hover:bg-white hover:shadow-xl hover:shadow-zinc-950/10",
-    disabled ? "cursor-not-allowed opacity-50 hover:translate-y-0 hover:shadow-sm" : ""
+      ? "bg-yellow-50 ring-yellow-200 shadow-[0_16px_42px_rgba(161,98,7,0.10)] "
+      : "bg-[#f9fafb] ring-zinc-100 shadow-sm shadow-zinc-950/5 hover:-translate-y-0.5 hover:bg-white hover:shadow-lg hover:shadow-zinc-950/8",
+    disabled ? "cursor-not-allowed opacity-50 hover:translate-y-0 hover:bg-[#f9fafb] hover:shadow-sm" : ""
   ];
 }
 
 function choiceIconClass(active: boolean, disabled = false) {
   return [
-    "grid size-9 shrink-0 place-items-center rounded-full transition duration-300",
+    "grid size-10 shrink-0 place-items-center rounded-full transition duration-300",
     active
       ? "bg-emerald-600 text-white shadow-lg shadow-emerald-950/20"
       : "bg-white text-zinc-500 shadow-sm shadow-zinc-950/5 group-hover:text-emerald-700",

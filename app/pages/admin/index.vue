@@ -8,6 +8,11 @@
           :loading="pending" @click="refresh()">
           Обновить
         </UButton>
+        <UButton color="neutral" variant="ghost" icon="i-lucide-file-spreadsheet" size="lg"
+          class="h-12 justify-center rounded-full bg-white px-4 text-zinc-600 shadow-sm shadow-zinc-950/5 hover:bg-zinc-100"
+          :loading="reportDownloading" @click="downloadAnalyticsReport">
+          Скачать Excel
+        </UButton>
         <UButton color="primary" variant="solid" icon="i-lucide-rotate-ccw" size="lg"
           class="h-12 justify-center rounded-full px-4 shadow-lg shadow-emerald-950/10"
           @click="filters.resetAnalyticsFilters()">
@@ -107,6 +112,7 @@ import {
   ShoppingCart,
   TrendingUp
 } from "@lucide/vue";
+import { toast } from "vue-sonner";
 import {
   buildQuery,
   formatCurrency,
@@ -131,6 +137,7 @@ definePageMeta({
 });
 
 const filters = useAdminFiltersStore();
+const reportDownloading = ref(false);
 
 const periodOptions = [
   { label: "7 дней", value: "7" as const },
@@ -295,6 +302,78 @@ function formatDateKey(value: string) {
     month: "short",
     year: "numeric"
   }).format(date);
+}
+
+async function downloadAnalyticsReport() {
+  if (!import.meta.client || reportDownloading.value) {
+    return;
+  }
+
+  reportDownloading.value = true;
+
+  try {
+    const response = await fetch(`/api/admin/reports/sales-stock${analyticsQuery.value}`, {
+      credentials: "include",
+      headers: {
+        Accept: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(await getReportDownloadError(response));
+    }
+
+    downloadBlob(
+      await response.blob(),
+      getReportFilename(response.headers.get("content-disposition")) ??
+        `protech-sales-stock-${filters.analytics.startDate}-${filters.analytics.endDate}.xlsx`
+    );
+    toast.success("Excel-отчёт скачан");
+  } catch (error) {
+    toast.error(getErrorMessage(error, "Не удалось скачать Excel-отчёт"));
+  } finally {
+    reportDownloading.value = false;
+  }
+}
+
+function downloadBlob(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function getReportFilename(disposition: string | null) {
+  const encodedFilename = disposition?.match(/filename\*=UTF-8''([^;]+)/i)?.[1];
+
+  if (encodedFilename) {
+    try {
+      return decodeURIComponent(encodedFilename);
+    } catch {
+      return encodedFilename;
+    }
+  }
+
+  return disposition?.match(/filename="?([^";]+)"?/i)?.[1];
+}
+
+async function getReportDownloadError(response: Response) {
+  try {
+    if (response.headers.get("content-type")?.includes("application/json")) {
+      const data = await response.json() as { message?: string };
+      return data.message || "Не удалось скачать Excel-отчёт";
+    }
+
+    const text = await response.text();
+    return text || `Не удалось скачать Excel-отчёт (${response.status})`;
+  } catch {
+    return `Не удалось скачать Excel-отчёт (${response.status})`;
+  }
 }
 </script>
 

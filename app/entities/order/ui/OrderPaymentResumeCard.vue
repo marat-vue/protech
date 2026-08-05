@@ -1,6 +1,6 @@
 <template>
   <section v-if="isPendingPayment"
-    class="rounded-[1.35rem] bg-emerald-50 p-4 text-emerald-900 ring-1 ring-emerald-200/80"
+    class="rounded-[1.35rem] bg-yellow-50 p-4 text-yellow-900 ring-1 ring-yellow-200/80"
     :class="compact ? 'mt-3' : ''">
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div class="min-w-0">
@@ -8,8 +8,8 @@
           <UIcon name="i-lucide-clock-3" class="size-4 shrink-0" />
           Ожидает оплаты
         </p>
-        <p class="mt-1 text-sm leading-6 text-emerald-800/80">
-          До автоматической отмены: <span class="font-semibold text-emerald-950">{{ formattedRemaining }}</span>
+        <p class="mt-1 text-sm leading-6 text-yellow-800/80">
+          До автоматической отмены: <span class="font-semibold text-yellow-950">{{ formattedRemaining }}</span>
         </p>
       </div>
 
@@ -20,8 +20,8 @@
       </UButton>
     </div>
 
-    <div class="mt-3 h-1.5 overflow-hidden rounded-full bg-emerald-200/70">
-      <div class="h-full rounded-full bg-emerald-500 transition-[width] duration-500"
+    <div class="mt-3 h-1.5 overflow-hidden rounded-full bg-yellow-200/70">
+      <div class="h-full rounded-full bg-yellow-500 transition-[width] duration-500"
         :style="{ width: `${progressPercent}%` }" />
     </div>
   </section>

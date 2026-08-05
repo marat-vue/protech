@@ -17,15 +17,24 @@ function escapeHtml(value: string): string {
     .replaceAll("'", "&#039;");
 }
 
+export function normalizeEmailUrl(value: string): string {
+  try {
+    return new URL(value).toString();
+  } catch {
+    return value;
+  }
+}
+
 export async function sendEmailVerification({
   url,
   user
 }: VerificationEmailInput): Promise<void> {
   const brandName = "ПроТех76";
   const displayName = user.name?.trim() || user.email;
+  const verificationUrl = normalizeEmailUrl(url);
 
   const safeName = escapeHtml(displayName);
-  const safeUrl = escapeHtml(url);
+  const safeUrl = escapeHtml(verificationUrl);
   const currentYear = new Date().getFullYear();
 
   const subject = `Подтвердите электронную почту — ${brandName}`;
@@ -36,7 +45,7 @@ export async function sendEmailVerification({
     `Благодарим вас за регистрацию в ${brandName}.`,
     "",
     "Чтобы подтвердить адрес электронной почты и войти в аккаунт, перейдите по ссылке:",
-    url,
+    verificationUrl,
     "",
     "Если ссылка не открывается, скопируйте её и вставьте в адресную строку браузера.",
     "",

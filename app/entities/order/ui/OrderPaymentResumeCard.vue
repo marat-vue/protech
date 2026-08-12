@@ -1,6 +1,6 @@
 <template>
   <section v-if="isPendingPayment"
-    class="rounded-[1.35rem] bg-yellow-50 p-4 text-yellow-900 ring-1 ring-yellow-200/80"
+    class="rounded-[1.35rem] bg-[#f3f7ff] p-4 text-blue-950 ring-1 ring-[#005bff]/20"
     :class="compact ? 'mt-3' : ''">
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div class="min-w-0">
@@ -8,20 +8,20 @@
           <UIcon name="i-lucide-clock-3" class="size-4 shrink-0" />
           Ожидает оплаты
         </p>
-        <p class="mt-1 text-sm leading-6 text-yellow-800/80">
-          До автоматической отмены: <span class="font-semibold text-yellow-950">{{ formattedRemaining }}</span>
+        <p class="mt-1 text-sm leading-6 text-blue-900/70">
+          Ozon Pay · до автоматической отмены: <span class="font-semibold text-blue-950">{{ formattedRemaining }}</span>
         </p>
       </div>
 
       <UButton color="primary" icon="i-lucide-credit-card" :loading="submitting" :disabled="remainingSeconds <= 0"
-        class="min-h-11 justify-center rounded-full px-5 font-semibold"
+        class="min-h-11 justify-center rounded-full bg-[#005bff] px-5 font-semibold text-white hover:bg-[#004ee0]"
         :class="compact ? 'w-full sm:w-auto' : 'w-full sm:min-w-48 sm:w-auto'" @click.stop="resumePayment">
-        {{ remainingSeconds > 0 ? "Перейти к оплате" : "Время истекло" }}
+        {{ remainingSeconds > 0 ? "Перейти в Ozon Pay" : "Время истекло" }}
       </UButton>
     </div>
 
-    <div class="mt-3 h-1.5 overflow-hidden rounded-full bg-yellow-200/70">
-      <div class="h-full rounded-full bg-yellow-500 transition-[width] duration-500"
+    <div class="mt-3 h-1.5 overflow-hidden rounded-full bg-blue-200/70">
+      <div class="h-full rounded-full bg-[#005bff] transition-[width] duration-500"
         :style="{ width: `${progressPercent}%` }" />
     </div>
   </section>

@@ -47,6 +47,7 @@
           :obtaining-method="draft.obtainingMethod" :street="draft.street" />
 
         <CheckoutSubmitPanel :delivery-label="deliveryLabel" :hidden-items-count="hiddenCheckoutItemsCount"
+          :online-payment="isDelivery || draft.paymentMethod === 'ONLINE'"
           :preview-items="checkoutPreviewItems" :submit-error="submitError" :submitting="submitting"
           :subtotal="cart.subtotal" :total-items="cart.totalItems" @submit="submitOrder" />
       </aside>
@@ -67,7 +68,7 @@ type CreateOrderResponse = {
     id: number;
   };
   payment: {
-    type: "offline" | "yookassa";
+    type: "offline" | "ozon";
     status?: string;
     confirmationUrl: string | null;
   };
@@ -79,6 +80,7 @@ type CheckoutChoice<TValue extends string> = {
   description: string;
   icon: string;
   badge?: string;
+  brand?: "ozon";
   disabled?: boolean;
 };
 type CheckoutTextField = keyof Omit<CheckoutDraft, "deliveryMethod" | "obtainingMethod" | "paymentMethod" | "recipientIsAnotherPerson">;
@@ -140,10 +142,11 @@ const hiddenCheckoutItemsCount = computed(() => Math.max(cart.items.length - che
 const paymentOptions = computed<Array<CheckoutChoice<PaymentMethod>>>(() => [
   {
     value: "ONLINE",
-    title: "Онлайн",
-    description: "Через YooKassa.",
-    icon: "i-lucide-credit-card",
-    badge: isDelivery.value ? "обязательно" : "быстро"
+    title: "Ozon Pay",
+    description: "Банковская карта, СБП или Ozon Карта. Доступны карты из Ozon ID.",
+    icon: "i-lucide-shield-check",
+    badge: isDelivery.value ? "обязательно" : "безопасно",
+    brand: "ozon"
   },
   {
     value: "OFFLINE",

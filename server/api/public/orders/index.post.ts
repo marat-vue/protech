@@ -3,8 +3,9 @@ import {
   PaymentStatus,
   Prisma
 } from "@prisma/client";
+import { getOrderPaymentExpiresAt } from "~~/server/utils/orderExpiry";
 import { reserveProductStock, restoreOrderStock } from "~~/server/utils/orderStock";
-import { createYooKassaPayment } from "~~/server/utils/yookassa";
+import { createOzonPayOrder, encodeOzonPayOrderId } from "~~/server/utils/ozonPay";
 import { createOrderSchema } from "~~/shared/schemas/user/orders/createOrder";
 
 export default defineEventHandler(async (event) => {
@@ -191,6 +192,7 @@ export default defineEventHandler(async (event) => {
     },
     select: {
       id: true,
+      createdAt: true,
       payment: {
         select: {
           amount: true
@@ -211,13 +213,13 @@ export default defineEventHandler(async (event) => {
     };
   }
 
-  const yookassaPayment = await createYooKassaPayment(event, {
+  const ozonPayOrder = await createOzonPayOrder(event, {
     orderId: order.id,
     amount: order.payment!.amount,
-    description: `Заказ №${order.id}`
+    expiresAt: getOrderPaymentExpiresAt(order.createdAt)
   }).catch(async (error) => {
     await prisma.$transaction(async (tx) => {
-      await restoreOrderStock(tx, order.id, "YooKassa payment creation failed");
+      await restoreOrderStock(tx, order.id, "Ozon Pay order creation failed");
 
       await tx.payment.update({
         where: { orderId: order.id },
@@ -244,8 +246,8 @@ export default defineEventHandler(async (event) => {
       orderId: order.id
     },
     data: {
-      transactionId: yookassaPayment.id,
-      confirmationUrl: yookassaPayment.confirmation?.confirmation_url ?? null
+      transactionId: encodeOzonPayOrderId(ozonPayOrder.id),
+      confirmationUrl: ozonPayOrder.payLink
     }
   });
 
@@ -254,9 +256,9 @@ export default defineEventHandler(async (event) => {
       id: order.id
     },
     payment: {
-      type: "yookassa",
-      status: yookassaPayment.status,
-      confirmationUrl: yookassaPayment.confirmation?.confirmation_url ?? null
+      type: "ozon",
+      status: ozonPayOrder.status,
+      confirmationUrl: ozonPayOrder.payLink
     }
   };
 });

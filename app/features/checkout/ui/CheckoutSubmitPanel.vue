@@ -37,16 +37,22 @@
         </p>
       </div>
 
-      <UButton color="primary"
+      <UButton :color="onlinePayment ? 'neutral' : 'primary'"
         size="xl"
-        icon="i-lucide-check-circle-2"
+        :icon="onlinePayment ? 'i-lucide-lock-keyhole' : 'i-lucide-check-circle-2'"
         class="min-h-14 w-full justify-center rounded-full px-8 text-base font-semibold transition duration-300 hover:scale-[1.01] sm:w-auto sm:min-w-72"
+        :class="onlinePayment ? 'bg-[#005bff] text-white hover:bg-[#004ee0]' : ''"
         :loading="submitting"
         @click="emit('submit')"
       >
-        Подтвердить заказ
+        {{ onlinePayment ? "Оплатить через Ozon Pay" : "Подтвердить заказ" }}
       </UButton>
     </div>
+
+    <p v-if="onlinePayment" class="mt-4 flex items-center gap-2 text-xs leading-5 text-white/55">
+      <UIcon name="i-lucide-shield-check" class="size-4 shrink-0 text-[#72a5ff]" />
+      После создания заказа откроется защищённая платёжная страница Ozon Pay.
+    </p>
 
     <UAlert v-if="submitError"
       color="error"
@@ -64,6 +70,7 @@ import type { CartItem } from "~~/app/shared/types/shop";
 defineProps<{
   deliveryLabel: string;
   hiddenItemsCount: number;
+  onlinePayment: boolean;
   previewItems: CartItem[];
   submitError: string;
   submitting: boolean;

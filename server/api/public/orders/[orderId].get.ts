@@ -1,8 +1,8 @@
 import { PaymentStatus } from "@prisma/client";
+import { syncOnlinePaymentStatus } from "~~/server/utils/onlinePaymentStatus";
 import { attachOrderPaymentMeta } from "~~/server/utils/orderPaymentMeta";
 import { attachOrderStatusHistory, getOrderStatusHistoryAuditLogs } from "~~/server/utils/orderStatusHistory";
 import { publicOrderSelect, toPublicOrderDto } from "~~/server/utils/publicOrderDto";
-import { syncYooKassaPaymentStatus } from "~~/server/utils/yookassaPaymentStatus";
 
 async function getUserOrder(orderId: number, userId: string) {
   return prisma.order.findFirst({
@@ -33,7 +33,7 @@ export default defineEventHandler(async (event) => {
     order.payment.transactionId
   ) {
     try {
-      const syncResult = await syncYooKassaPaymentStatus(event, order.payment.transactionId);
+      const syncResult = await syncOnlinePaymentStatus(event, order.payment.transactionId);
 
       if (syncResult.processed || syncResult.alreadyProcessed) {
         const syncedOrder = await getUserOrder(orderId, userId);
@@ -43,7 +43,7 @@ export default defineEventHandler(async (event) => {
         }
       }
     } catch (error) {
-      console.error("Failed to sync YooKassa payment status", error);
+      console.error("Failed to sync online payment status", error);
     }
   }
 

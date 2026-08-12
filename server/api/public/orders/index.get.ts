@@ -2,10 +2,10 @@ import { PaymentStatus } from "@prisma/client";
 import type { H3Event } from "h3";
 import { attachOrdersPaymentMeta } from "~~/server/utils/orderPaymentMeta";
 import { attachOrderStatusHistory, getOrderStatusHistoryAuditLogs } from "~~/server/utils/orderStatusHistory";
+import { syncOnlinePaymentStatus } from "~~/server/utils/onlinePaymentStatus";
 import { publicOrderSelect, toPublicOrderDto, type PublicOrderRecord } from "~~/server/utils/publicOrderDto";
-import { syncYooKassaPaymentStatus } from "~~/server/utils/yookassaPaymentStatus";
 
-async function syncPendingYooKassaOrders(event: H3Event, orders: PublicOrderRecord[]) {
+async function syncPendingOnlineOrders(event: H3Event, orders: PublicOrderRecord[]) {
   const pendingPaymentIds = orders
     .filter((order) => (
       order.paymentMethod === "ONLINE" &&
@@ -19,12 +19,12 @@ async function syncPendingYooKassaOrders(event: H3Event, orders: PublicOrderReco
   }
 
   const syncResults = await Promise.allSettled(
-    pendingPaymentIds.map((paymentId) => syncYooKassaPaymentStatus(event, paymentId))
+    pendingPaymentIds.map((paymentId) => syncOnlinePaymentStatus(event, paymentId))
   );
 
   for (const result of syncResults) {
     if (result.status === "rejected") {
-      console.error("Failed to sync YooKassa payment status", result.reason);
+      console.error("Failed to sync online payment status", result.reason);
     }
   }
 
@@ -47,7 +47,7 @@ export default defineEventHandler(async (event) => {
     }
   });
 
-  if (await syncPendingYooKassaOrders(event, orders)) {
+  if (await syncPendingOnlineOrders(event, orders)) {
     orders = await prisma.order.findMany({
       where: {
         userId

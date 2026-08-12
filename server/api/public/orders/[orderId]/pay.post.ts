@@ -2,9 +2,14 @@ import {
   PaymentMethod,
   PaymentStatus
 } from "@prisma/client";
+import { syncOnlinePaymentStatus } from "~~/server/utils/onlinePaymentStatus";
 import { expireUnpaidOrders, getOrderPaymentExpiresAt, getOrderPaymentRemainingSeconds } from "~~/server/utils/orderExpiry";
+import {
+  createOzonPayOrder,
+  decodeOzonPayOrderId,
+  encodeOzonPayOrderId
+} from "~~/server/utils/ozonPay";
 import { createYooKassaPayment } from "~~/server/utils/yookassa";
-import { syncYooKassaPaymentStatus } from "~~/server/utils/yookassaPaymentStatus";
 
 async function getOrder(orderId: number, userId: string) {
   return prisma.order.findFirst({
@@ -82,11 +87,11 @@ export default defineEventHandler(async (event) => {
     let shouldReloadOrder = false;
 
     try {
-      const syncResult = await syncYooKassaPaymentStatus(event, order.payment.transactionId);
+      const syncResult = await syncOnlinePaymentStatus(event, order.payment.transactionId);
 
       shouldReloadOrder = syncResult.processed || Boolean(syncResult.alreadyProcessed);
     } catch (error) {
-      console.error("Failed to sync YooKassa payment status before resume", error);
+      console.error("Failed to sync online payment status before resume", error);
     }
 
     if (shouldReloadOrder) {
@@ -106,30 +111,55 @@ export default defineEventHandler(async (event) => {
   let confirmationUrl = order.payment.confirmationUrl;
 
   if (!confirmationUrl) {
-    const yookassaPayment = await createYooKassaPayment(event, {
-      orderId: order.id,
-      amount: order.payment.amount,
-      description: `Заказ №${order.id}`
-    });
+    const isLegacyYooKassaPayment = Boolean(
+      order.payment.transactionId &&
+      !decodeOzonPayOrderId(order.payment.transactionId)
+    );
 
-    confirmationUrl = yookassaPayment.confirmation?.confirmation_url ?? null;
+    if (isLegacyYooKassaPayment) {
+      const yookassaPayment = await createYooKassaPayment(event, {
+        orderId: order.id,
+        amount: order.payment.amount,
+        description: `Заказ №${order.id}`
+      });
+
+      confirmationUrl = yookassaPayment.confirmation?.confirmation_url ?? null;
+
+      await prisma.payment.update({
+        where: {
+          orderId: order.id
+        },
+        data: {
+          transactionId: yookassaPayment.id,
+          confirmationUrl
+        }
+      });
+    } else {
+      const ozonPayOrder = await createOzonPayOrder(event, {
+        orderId: order.id,
+        amount: order.payment.amount,
+        expiresAt: getOrderPaymentExpiresAt(order.createdAt)
+      });
+
+      confirmationUrl = ozonPayOrder.payLink;
+
+      await prisma.payment.update({
+        where: {
+          orderId: order.id
+        },
+        data: {
+          transactionId: encodeOzonPayOrderId(ozonPayOrder.id),
+          confirmationUrl
+        }
+      });
+    }
 
     if (!confirmationUrl) {
       throw createError({
         statusCode: 502,
-        message: "ЮKassa не вернула ссылку на оплату"
+        message: "Платёжный сервис не вернул ссылку на оплату"
       });
     }
-
-    await prisma.payment.update({
-      where: {
-        orderId: order.id
-      },
-      data: {
-        transactionId: yookassaPayment.id,
-        confirmationUrl
-      }
-    });
   }
 
   return {

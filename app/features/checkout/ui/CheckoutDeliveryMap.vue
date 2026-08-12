@@ -82,9 +82,9 @@ const deliveryFallbackPosition = {
   label: "Москва"
 };
 const pickupPosition = {
-  lat: 57.650391,
-  lon: 39.858221,
-  label: "Ярославль, пр.-т Октября, д. 78д"
+  lat: 57.649298, 
+  lon: 39.860342,
+  label: "Ярославль, пр.-т Октября, д. 78Б"
 };
 const position = ref({
   ...deliveryFallbackPosition

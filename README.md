@@ -1,6 +1,6 @@
 # ПроТех76
 
-Nuxt 4 витрина и админ-панель для каталога ПроТех76: товары, корзина, заказы, отзывы, сообщения, склад, аналитика, YooKassa и загрузка медиа в S3.
+Nuxt 4 витрина и админ-панель для каталога ПроТех76: товары, корзина, заказы, отзывы, сообщения, склад, аналитика, Ozon Pay Checkout и загрузка медиа в S3.
 
 ## Локальная разработка
 
@@ -16,8 +16,8 @@ npm run dev
 
 - Задайте `DATABASE_URL` или отдельные переменные `DB_*`.
 - Задайте production-значения для `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `NUXT_SITE_URL`, `NUXT_PUBLIC_SITE_URL`, `NUXT_PUBLIC_APP_URL` и `NUXT_OG_IMAGE_SECRET`.
-- Заполните переменные YooKassa перед включением онлайн-оплаты.
-- Проверьте фискальные переменные YooKassa: `YOOKASSA_RECEIPT_VAT_CODE`, `YOOKASSA_RECEIPT_TAX_SYSTEM_CODE`, `YOOKASSA_RECEIPT_PAYMENT_MODE`, `YOOKASSA_RECEIPT_PAYMENT_SUBJECT`.
+- Создайте тестовый токен Ozon Acquiring и заполните `OZON_PAY_ACCESS_KEY`, `OZON_PAY_SECRET_KEY`, `OZON_PAY_NOTIFICATION_SECRET_KEY`.
+- В настройках токена укажите страницы возврата магазина и URL уведомлений `/api/public/payments/ozon/webhook`, затем проверьте `OZON_PAY_VAT` и настройку фискализации.
 - Заполните `AWS_REGION`, `AWS_S3_BUCKET`, `S3_ENDPOINT`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` и `S3_PUBLIC_URL` перед использованием загрузок.
 - Перед деплоем запустите `npm run check`, `npm run test:integration` и `npm run build`.
 - Миграции применяйте через `npm run prisma:migrate:deploy`; `npm run seed:admin` запускайте только когда нужно создать или обновить настроенный admin-аккаунт.

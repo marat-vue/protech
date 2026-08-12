@@ -107,10 +107,10 @@
             role="radio"
             :aria-checked="paymentMethod === option.value"
             :aria-disabled="option.disabled || undefined"
-            :class="choiceButtonClass(paymentMethod === option.value, option.disabled)"
+            :class="choiceButtonClass(paymentMethod === option.value, option.disabled, option.brand)"
             @click="emit('selectPayment', option.value)"
           >
-            <span :class="choiceIconClass(paymentMethod === option.value, option.disabled)">
+            <span :class="choiceIconClass(paymentMethod === option.value, option.disabled, option.brand)">
               <UIcon :name="option.icon"
                 class="size-4.5"
               />
@@ -132,6 +132,28 @@
             />
           </button>
         </div>
+
+        <div v-if="paymentMethod === 'ONLINE'"
+          class="mt-3 overflow-hidden rounded-[1.25rem] bg-[#f3f7ff] p-4 ring-1 ring-[#005bff]/15"
+        >
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex items-center rounded-xl bg-[#005bff] px-2.5 py-1.5 text-xs font-black tracking-[0.08em] text-white">
+                OZON
+              </span>
+              <div>
+                <p class="text-sm font-semibold text-zinc-950">Оплата на стороне Ozon Pay</p>
+                <p class="mt-0.5 text-xs leading-5 text-zinc-500">Платёжные данные не передаются магазину.</p>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap gap-1.5 text-[11px] font-semibold text-[#005bff]">
+              <span class="rounded-full bg-white px-2.5 py-1 ring-1 ring-[#005bff]/10">Карта</span>
+              <span class="rounded-full bg-white px-2.5 py-1 ring-1 ring-[#005bff]/10">СБП</span>
+              <span class="rounded-full bg-white px-2.5 py-1 ring-1 ring-[#005bff]/10">Ozon Карта</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -142,6 +164,7 @@ import type { DeliveryMethod, ObtainingMethod, PaymentMethod } from "~~/app/shar
 
 type CheckoutChoice<TValue extends string> = {
   badge?: string;
+  brand?: "ozon";
   description: string;
   disabled?: boolean;
   icon: string;
@@ -165,21 +188,25 @@ const emit = defineEmits<{
   selectPayment: [value: PaymentMethod];
 }>();
 
-function choiceButtonClass(active: boolean, disabled = false) {
+function choiceButtonClass(active: boolean, disabled = false, brand?: "ozon") {
   return [
     "group relative flex min-h-[6.5rem] w-full items-start gap-3 rounded-[1.25rem] p-4 pr-10 text-left ring-1 transition duration-300",
     active
-      ? "bg-yellow-50 ring-yellow-200 shadow-[0_16px_42px_rgba(161,98,7,0.10)] "
+      ? brand === "ozon"
+        ? "bg-[#f3f7ff] ring-[#005bff]/30 shadow-[0_16px_42px_rgba(0,91,255,0.12)]"
+        : "bg-yellow-50 ring-yellow-200 shadow-[0_16px_42px_rgba(161,98,7,0.10)] "
       : "bg-[#f9fafb] ring-zinc-100 shadow-sm shadow-zinc-950/5 hover:-translate-y-0.5 hover:bg-white hover:shadow-lg hover:shadow-zinc-950/8",
     disabled ? "cursor-not-allowed opacity-50 hover:translate-y-0 hover:bg-[#f9fafb] hover:shadow-sm" : ""
   ];
 }
 
-function choiceIconClass(active: boolean, disabled = false) {
+function choiceIconClass(active: boolean, disabled = false, brand?: "ozon") {
   return [
     "grid size-10 shrink-0 place-items-center rounded-full transition duration-300",
     active
-      ? "bg-emerald-600 text-white shadow-lg shadow-emerald-950/20"
+      ? brand === "ozon"
+        ? "bg-[#005bff] text-white shadow-lg shadow-blue-950/20"
+        : "bg-emerald-600 text-white shadow-lg shadow-emerald-950/20"
       : "bg-white text-zinc-500 shadow-sm shadow-zinc-950/5 group-hover:text-emerald-700",
     disabled ? "group-hover:text-zinc-500" : ""
   ];

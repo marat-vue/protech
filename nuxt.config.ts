@@ -48,13 +48,27 @@ export default defineNuxtConfig({
     "vue-sonner/nuxt",
     "@nuxtjs/seo"
   ],
+  ui: {
+    fonts: false
+  },
+  icon: {
+    serverBundle: {
+      collections: ["lucide"]
+    },
+    clientBundle: {
+      scan: {
+        globInclude: ["app/**/*.{vue,js,ts,jsx,tsx}"]
+      }
+    },
+    fallbackToApi: false
+  },
   app: {
     head: {
       htmlAttrs: {
         lang: "ru"
       },
       link: [
-        { rel: "icon", href: "/favicon.ico", sizes: "any" },
+        { rel: "icon", href: "/favicon.ico", sizes: "32x32" },
         { rel: "apple-touch-icon", href: "/logo.png" },
         { rel: "manifest", href: "/site.webmanifest" },
         { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -99,6 +113,12 @@ export default defineNuxtConfig({
     css: true
   },
   runtimeConfig: {
+    ozonPayAccessKey: process.env.OZON_PAY_ACCESS_KEY,
+    ozonPaySecretKey: process.env.OZON_PAY_SECRET_KEY,
+    ozonPayNotificationSecretKey: process.env.OZON_PAY_NOTIFICATION_SECRET_KEY,
+    ozonPayApiUrl: process.env.OZON_PAY_API_URL,
+    ozonPayVat: process.env.OZON_PAY_VAT,
+    ozonPayEnableFiscalization: process.env.OZON_PAY_ENABLE_FISCALIZATION,
     yookassaShopId: process.env.YOOKASSA_SHOP_ID ?? process.env.YOKASSA_SHOP_ID,
     yookassaSecretKey: process.env.YOOKASSA_SECRET_KEY ?? process.env.YOKASSA_SECRET_KEY,
     yookassaApiUrl: process.env.YOOKASSA_API_URL,
@@ -118,6 +138,7 @@ export default defineNuxtConfig({
     canonicalLowercase: true,
     canonicalQueryWhitelist: [],
     redirectToCanonicalSiteUrl: Boolean(siteUrl),
+    treeShakeUseSeoMeta: false,
     meta: {
       ogImage: "/logo.png",
       ogImageAlt: "Логотип ПроТех76",

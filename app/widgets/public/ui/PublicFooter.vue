@@ -33,6 +33,21 @@
         </div>
       </section>
 
+      <section
+        class="rounded-4xl bg-white/90 p-5 shadow-[0_18px_70px_rgba(15,23,42,0.06)] backdrop-blur-xl sm:p-6">
+        <div class="mb-5 max-w-2xl sm:mb-6">
+          <p class="text-sm font-medium uppercase text-emerald-700">Наш магазин</p>
+          <h2 class="mt-2 text-2xl font-semibold tracking-normal text-zinc-950 sm:text-3xl">
+            Где мы находимся
+          </h2>
+          <p class="mt-2 text-sm leading-6 text-zinc-500 sm:text-base">
+            Приезжайте за заказом в наш магазин в Ярославле. Точка самовывоза уже отмечена на карте.
+          </p>
+        </div>
+
+        <CheckoutDeliveryMap city="" delivery-method="OZON" house="" obtaining-method="PICKUP" street="" />
+      </section>
+
       <section class="rounded-4xl bg-white/90 p-5 shadow-[0_18px_70px_rgba(15,23,42,0.06)] backdrop-blur-xl sm:p-6">
         <div class="grid gap-8 lg:grid-cols-[1.15fr_1fr_1fr_1fr]">
           <div>

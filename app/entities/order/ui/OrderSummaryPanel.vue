@@ -11,6 +11,11 @@
           <span>{{ row.label }}</span>
           <span class="font-medium text-zinc-950">{{ row.value }}</span>
         </div>
+        <div v-if="order.promoCode && Number(order.discountAmount) > 0"
+          class="flex justify-between gap-4 text-emerald-700">
+          <span>Промокод {{ order.promoCode }} ({{ order.promoDiscountPercent }}%)</span>
+          <span class="font-semibold">−{{ formatCurrency(order.discountAmount) }}</span>
+        </div>
         <div class="flex justify-between gap-4 rounded-[1.5rem] bg-[#f9fafb] p-4 text-lg font-semibold text-zinc-950  ">
           <span>Сумма</span>
           <span>{{ formatCurrency(order.payment?.amount) }}</span>

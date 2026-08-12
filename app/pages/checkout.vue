@@ -49,7 +49,11 @@
         <CheckoutSubmitPanel :delivery-label="deliveryLabel" :hidden-items-count="hiddenCheckoutItemsCount"
           :online-payment="isDelivery || draft.paymentMethod === 'ONLINE'"
           :preview-items="checkoutPreviewItems" :submit-error="submitError" :submitting="submitting"
-          :subtotal="cart.subtotal" :total-items="cart.totalItems" @submit="submitOrder" />
+          :subtotal="cart.subtotal" :total-items="cart.totalItems" :total-amount="checkoutTotal"
+          :applied-promo-code="appliedPromo?.code ?? ''" :discount-amount="appliedPromo?.discountAmount ?? 0"
+          :promo-code="promoCodeInput" :promo-discount-percent="appliedPromo?.discountPercent ?? 0"
+          :promo-error="promoError" :promo-loading="promoLoading" @apply-promo="applyPromoCode"
+          @remove-promo="removePromoCode" @update-promo-code="updatePromoCode" @submit="submitOrder" />
       </aside>
     </div>
   </div>
@@ -83,6 +87,12 @@ type CheckoutChoice<TValue extends string> = {
   brand?: "ozon";
   disabled?: boolean;
 };
+type AppliedPromo = {
+  code: string;
+  discountPercent: number;
+  discountAmount: number;
+  totalAmount: number;
+};
 type CheckoutTextField = keyof Omit<CheckoutDraft, "deliveryMethod" | "obtainingMethod" | "paymentMethod" | "recipientIsAnotherPerson">;
 
 useSeoMeta({
@@ -97,6 +107,10 @@ const draft = cart.checkoutDraft;
 const loading = ref(true);
 const submitting = ref(false);
 const submitError = ref("");
+const promoCodeInput = ref("");
+const promoError = ref("");
+const promoLoading = ref(false);
+const appliedPromo = ref<AppliedPromo | null>(null);
 const fieldErrors = reactive<Record<string, string | undefined>>({});
 const obtainingOptions: Array<CheckoutChoice<ObtainingMethod>> = [
   {
@@ -139,6 +153,7 @@ const recipientName = computed(() => (draft.recipientName ?? "").trim());
 const recipientPhone = computed(() => (draft.recipientPhone ?? "").trim());
 const checkoutPreviewItems = computed(() => cart.items.slice(0, 4));
 const hiddenCheckoutItemsCount = computed(() => Math.max(cart.items.length - checkoutPreviewItems.value.length, 0));
+const checkoutTotal = computed(() => appliedPromo.value?.totalAmount ?? cart.subtotal);
 const paymentOptions = computed<Array<CheckoutChoice<PaymentMethod>>>(() => [
   {
     value: "ONLINE",
@@ -261,6 +276,54 @@ function fullAddress() {
     .join(", ");
 }
 
+function updatePromoCode(value: string) {
+  promoCodeInput.value = value.toUpperCase();
+  promoError.value = "";
+}
+
+async function applyPromoCode() {
+  const code = promoCodeInput.value.trim();
+
+  if (!code) {
+    promoError.value = "Введите промокод";
+    return;
+  }
+
+  promoLoading.value = true;
+  promoError.value = "";
+
+  try {
+    const result = await shopFetch<{
+      code: string;
+      discountPercent: number;
+      discountAmount: number | string;
+      totalAmount: number | string;
+    }>("/api/public/promo-codes/validate", {
+      method: "POST",
+      body: { code, orderItems: cart.orderItems }
+    });
+    appliedPromo.value = {
+      code: result.code,
+      discountPercent: result.discountPercent,
+      discountAmount: Number(result.discountAmount),
+      totalAmount: Number(result.totalAmount)
+    };
+    promoCodeInput.value = result.code;
+    toast.success(`Промокод применён: скидка ${result.discountPercent}%`);
+  } catch (error) {
+    appliedPromo.value = null;
+    promoError.value = getErrorMessage(error, "Не удалось применить промокод");
+  } finally {
+    promoLoading.value = false;
+  }
+}
+
+function removePromoCode() {
+  appliedPromo.value = null;
+  promoCodeInput.value = "";
+  promoError.value = "";
+}
+
 async function submitOrder() {
   submitError.value = "";
 
@@ -281,6 +344,7 @@ async function submitOrder() {
         obtainingMethod: draft.obtainingMethod,
         paymentMethod: isDelivery.value ? "ONLINE" : draft.paymentMethod,
         customerPhone: customerPhone.value,
+        ...(appliedPromo.value ? { promoCode: appliedPromo.value.code } : {}),
         ...(draft.recipientIsAnotherPerson
           ? {
             recipient: {

@@ -1,0 +1,15 @@
+model PromoCode {
+    id              Int      @id @default(autoincrement())
+    code            String   @unique @db.VarChar(64)
+    discountPercent Int      @map("discount_percent")
+    isActive        Boolean  @default(true) @map("is_active")
+    expiresAt       DateTime? @map("expires_at")
+
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    orders Order[]
+
+    @@index([isActive, expiresAt])
+    @@map("promo_code")
+}

@@ -52,4 +52,14 @@ describe("create order schema delivery methods", () => {
 
     expect(result.success).toBe(false);
   });
+
+  it("accepts and normalizes a promo code", () => {
+    const result = createOrderSchema.safeParse({
+      ...createDeliveryOrder(),
+      promoCode: " summer_15 "
+    });
+
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.promoCode).toBe("SUMMER_15");
+  });
 });

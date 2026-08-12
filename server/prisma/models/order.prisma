@@ -28,6 +28,12 @@ model Order {
     recipientName   String?         @map("recipient_name")
     recipientPhone  String?         @map("recipient_phone")
     stockReserved   Boolean         @default(false) @map("stock_reserved")
+    promoCodeId          Int?       @map("promo_code_id")
+    promoCode            PromoCode? @relation(fields: [promoCodeId], references: [id], onDelete: SetNull)
+    promoCodeText        String?    @map("promo_code") @db.VarChar(64)
+    promoDiscountPercent Int        @default(0) @map("promo_discount_percent")
+    subtotalAmount       Decimal    @default(0) @map("subtotal_amount") @db.Decimal(12, 2)
+    discountAmount       Decimal    @default(0) @map("discount_amount") @db.Decimal(12, 2)
 
     createdAt DateTime @default(now()) @map("created_at")
     updatedAt DateTime @updatedAt @map("updated_at")
@@ -38,6 +44,7 @@ model Order {
     stockMovements StockMovement[]
 
     @@index([userId])
+    @@index([promoCodeId])
     @@index([orderStatus, createdAt])
     @@index([createdAt])
     @@map("order")

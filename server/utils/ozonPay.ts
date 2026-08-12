@@ -29,6 +29,15 @@ type OzonPayMoney = {
   value: string;
 };
 
+type OzonPayReceiptSourceItem = {
+  id: number;
+  productId: number;
+  productName: string;
+  productArticle: string;
+  quantity: number;
+  price: Prisma.Decimal;
+};
+
 export type OzonPayOrderStatus =
   | "STATUS_NEW"
   | "STATUS_PAYMENT_PENDING"
@@ -237,6 +246,114 @@ function truncateItemName(value: string, fallback: string) {
   return Array.from(normalized).slice(0, 128).join("");
 }
 
+export function allocateOzonPayReceiptItems(
+  orderItems: OzonPayReceiptSourceItem[],
+  paymentAmount: Prisma.Decimal.Value
+) {
+  const bigintZero = BigInt(0);
+  const bigintOne = BigInt(1);
+  const sourceItems = orderItems.map((item) => {
+    const priceMinor = BigInt(toOzonPayMinorUnits(item.price));
+    const originalLineMinor = priceMinor * BigInt(item.quantity);
+
+    return {
+      item,
+      originalLineMinor,
+      reducibleMinor: originalLineMinor - BigInt(item.quantity)
+    };
+  });
+  const originalTotalMinor = sourceItems.reduce((sum, item) => sum + item.originalLineMinor, bigintZero);
+  const paymentTotalMinor = BigInt(toOzonPayMinorUnits(paymentAmount));
+  const discountMinor = originalTotalMinor - paymentTotalMinor;
+  const totalReducibleMinor = sourceItems.reduce((sum, item) => sum + item.reducibleMinor, bigintZero);
+
+  if (discountMinor < bigintZero || discountMinor > totalReducibleMinor) {
+    throw createError({
+      statusCode: 500,
+      message: "Сумма позиций Ozon Pay не совпадает с суммой платежа"
+    });
+  }
+
+  const allocations = sourceItems.map((source, index) => {
+    if (!discountMinor || !totalReducibleMinor) {
+      return { index, discount: bigintZero, remainder: bigintZero };
+    }
+
+    const exactNumerator = discountMinor * source.reducibleMinor;
+    const discount = exactNumerator / totalReducibleMinor;
+
+    return {
+      index,
+      discount,
+      remainder: exactNumerator % totalReducibleMinor
+    };
+  });
+  let undistributed = discountMinor - allocations.reduce((sum, item) => sum + item.discount, bigintZero);
+
+  for (const allocation of [...allocations].sort((left, right) => (
+    left.remainder === right.remainder ? 0 : left.remainder > right.remainder ? -1 : 1
+  ))) {
+    if (!undistributed) break;
+    const source = sourceItems[allocation.index]!;
+
+    if (allocation.discount < source.reducibleMinor) {
+      allocation.discount += bigintOne;
+      undistributed -= bigintOne;
+    }
+  }
+
+  if (undistributed) {
+    throw createError({
+      statusCode: 500,
+      message: "Не удалось распределить скидку по позициям Ozon Pay"
+    });
+  }
+
+  return sourceItems.flatMap((source, index) => {
+    const allocatedDiscount = allocations[index]!.discount;
+    const payableLineMinor = source.originalLineMinor - allocatedDiscount;
+    const quantity = BigInt(source.item.quantity);
+    const baseUnitMinor = payableLineMinor / quantity;
+    const higherPriceQuantity = Number(payableLineMinor % quantity);
+    const basePriceQuantity = source.item.quantity - higherPriceQuantity;
+    const name = truncateItemName(
+      `${source.item.productName} (${source.item.productArticle})`,
+      `Товар ${source.item.productId}`
+    );
+
+    if (!allocatedDiscount || higherPriceQuantity === 0) {
+      return [{
+        ...source.item,
+        extId: `order-item-${source.item.id}`,
+        name,
+        priceMinor: Number(baseUnitMinor),
+        quantity: source.item.quantity
+      }];
+    }
+
+    return [
+      ...(higherPriceQuantity
+        ? [{
+            ...source.item,
+            extId: `order-item-${source.item.id}-a`,
+            name,
+            priceMinor: Number(baseUnitMinor + bigintOne),
+            quantity: higherPriceQuantity
+          }]
+        : []),
+      ...(basePriceQuantity
+        ? [{
+            ...source.item,
+            extId: `order-item-${source.item.id}-b`,
+            name,
+            priceMinor: Number(baseUnitMinor),
+            quantity: basePriceQuantity
+          }]
+        : [])
+    ];
+  });
+}
+
 export async function buildOzonPayCreateOrderBody(
   event: H3Event,
   input: {
@@ -290,17 +407,7 @@ export async function buildOzonPayCreateOrderBody(
     });
   }
 
-  const calculatedTotal = order.orderItems.reduce(
-    (sum, item) => sum.add(new Prisma.Decimal(item.price).mul(item.quantity)),
-    new Prisma.Decimal(0)
-  );
-
-  if (!calculatedTotal.equals(input.amount)) {
-    throw createError({
-      statusCode: 500,
-      message: "Сумма позиций Ozon Pay не совпадает с суммой платежа"
-    });
-  }
+  const receiptItems = allocateOzonPayReceiptItems(order.orderItems, input.amount);
 
   const extId = String(input.orderId);
   const expiresAt = input.expiresAt.toISOString();
@@ -332,16 +439,13 @@ export async function buildOzonPayCreateOrderBody(
     extId,
     failUrl: `${config.appUrl}/orders/${order.id}?payment=failed`,
     fiscalizationType,
-    items: order.orderItems.map((item) => ({
-      extId: `order-item-${item.id}`,
-      name: truncateItemName(
-        `${item.productName} (${item.productArticle})`,
-        `Товар ${item.productId}`
-      ),
+    items: receiptItems.map((item) => ({
+      extId: item.extId,
+      name: item.name,
       needMark: false,
       price: {
         currencyCode: OZON_PAY_CURRENCY_CODE,
-        value: toOzonPayMinorUnits(item.price)
+        value: String(item.priceMinor)
       },
       quantity: item.quantity,
       type: "TYPE_PRODUCT" as const,

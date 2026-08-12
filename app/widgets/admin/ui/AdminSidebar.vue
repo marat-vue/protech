@@ -126,6 +126,7 @@
 <script setup lang="ts">
 import {
   BarChart3,
+  BadgePercent,
   ClipboardList,
   Layers3,
   MessageSquareText,
@@ -173,6 +174,7 @@ const navGroups = [
     label: "Операции",
     items: [
       { label: "Заказы", to: "/admin/orders", icon: ClipboardList },
+      { label: "Промокоды", to: "/admin/promo-codes", icon: BadgePercent },
       { label: "Сообщения", to: "/admin/messages", icon: MessagesSquare },
       { label: "Заявки на звонок", to: "/admin/callback-requests", icon: PhoneCall }
     ]

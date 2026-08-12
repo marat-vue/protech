@@ -1,5 +1,6 @@
 // server/schemas/createOrder.ts
 import { z } from "zod";
+import { promoCodeSchema } from "../../promoCodes/code";
 
 const orderItemSchema = z.strictObject({
 	productId: z.coerce
@@ -13,7 +14,7 @@ const orderItemSchema = z.strictObject({
 		.positive("Количество товара должно быть больше нуля")
 });
 
-const orderItemsSchema = z
+export const orderItemsSchema = z
 	.array(orderItemSchema)
 	.min(1, "Заказ должен содержать хотя бы один товар")
 	.superRefine((items, ctx) => {
@@ -70,6 +71,7 @@ export const createOrderSchema = z.discriminatedUnion("obtainingMethod", [
 		obtainingMethod: z.literal("PICKUP"),
 		paymentMethod: z.enum(["OFFLINE", "ONLINE"], "Способ оплаты необходим"),
 		customerPhone: customerPhoneSchema,
+		promoCode: promoCodeSchema.optional(),
 		recipient: recipientSchema.optional(),
 		orderItems: orderItemsSchema,
 
@@ -80,6 +82,7 @@ export const createOrderSchema = z.discriminatedUnion("obtainingMethod", [
 		obtainingMethod: z.literal("DELIVERY"),
 		paymentMethod: z.literal("ONLINE", "При доставке доступна только онлайн-оплата"),
 		customerPhone: customerPhoneSchema,
+		promoCode: promoCodeSchema.optional(),
 		recipient: recipientSchema.optional(),
 		orderItems: orderItemsSchema,
 

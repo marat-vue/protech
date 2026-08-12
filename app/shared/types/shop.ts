@@ -174,6 +174,10 @@ export type ShopOrder = {
   customerPhone: string | null;
   recipientName: string | null;
   recipientPhone: string | null;
+  promoCode: string | null;
+  promoDiscountPercent: number;
+  subtotalAmount: MoneyLike;
+  discountAmount: MoneyLike;
   createdAt: string;
   updatedAt: string;
   statusHistory?: OrderStatusHistoryItem[];

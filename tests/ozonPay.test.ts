@@ -2,6 +2,7 @@ import { Prisma } from "@prisma/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   buildOzonPayCreateOrderBody,
+  allocateOzonPayReceiptItems,
   createOzonPayHash,
   createOzonPayNotificationSignature,
   createOzonPayOrder,
@@ -139,6 +140,15 @@ describe("Ozon Pay Checkout", () => {
       "34100",
       "secret-key"
     ]));
+  });
+
+  it("distributes a promo discount across receipt items to the exact kopeck", () => {
+    const items = allocateOzonPayReceiptItems(orderFixture.orderItems, new Prisma.Decimal("289.85"));
+    const totalMinor = items.reduce((sum, item) => sum + item.priceMinor * item.quantity, 0);
+
+    expect(totalMinor).toBe(28_985);
+    expect(items.every((item) => item.priceMinor >= 1)).toBe(true);
+    expect(items.reduce((sum, item) => sum + item.quantity, 0)).toBe(3);
   });
 
   it("posts the signed order and returns the hosted pay link", async () => {

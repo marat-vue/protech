@@ -6,6 +6,7 @@ import {
 import { getOrderPaymentExpiresAt } from "~~/server/utils/orderExpiry";
 import { reserveProductStock, restoreOrderStock } from "~~/server/utils/orderStock";
 import { createOzonPayOrder, encodeOzonPayOrderId } from "~~/server/utils/ozonPay";
+import { assertPromoCodeIsAvailable, calculatePromoPricing } from "~~/server/utils/promoCode";
 import { createOrderSchema } from "~~/shared/schemas/user/orders/createOrder";
 
 export default defineEventHandler(async (event) => {
@@ -90,18 +91,41 @@ export default defineEventHandler(async (event) => {
       return price;
     };
 
-    const totalAmount = body.orderItems.reduce<Prisma.Decimal>((sum, item) => {
+    const subtotalAmount = body.orderItems.reduce<Prisma.Decimal>((sum, item) => {
       const price = getProductPrice(item.productId);
 
       return sum.add(price.mul(item.quantity));
     }, new Prisma.Decimal(0));
 
-    if (totalAmount.lte(0)) {
+    if (subtotalAmount.lte(0)) {
       throw createError({
         statusCode: 400,
         message: "Сумма заказа должна быть больше нуля"
       });
     }
+
+    const promoCode = body.promoCode
+      ? await tx.promoCode.findUnique({
+          where: { code: body.promoCode },
+          select: {
+            id: true,
+            code: true,
+            discountPercent: true,
+            isActive: true,
+            expiresAt: true
+          }
+        })
+      : null;
+
+    if (body.promoCode) {
+      assertPromoCodeIsAvailable(promoCode);
+    }
+
+    const pricing = calculatePromoPricing(
+      subtotalAmount,
+      promoCode?.discountPercent ?? 0,
+      body.orderItems.reduce((sum, item) => sum + item.quantity, 0)
+    );
 
     const createdOrder = await tx.order.create({
       data: {
@@ -112,6 +136,11 @@ export default defineEventHandler(async (event) => {
         recipientName: body.recipient?.name,
         recipientPhone: body.recipient?.phone,
         stockReserved: true,
+        promoCodeId: promoCode?.id,
+        promoCodeText: promoCode?.code,
+        promoDiscountPercent: promoCode?.discountPercent ?? 0,
+        subtotalAmount: pricing.subtotal,
+        discountAmount: pricing.discountAmount,
 
         orderStatus:
           body.paymentMethod === "ONLINE"
@@ -164,7 +193,7 @@ export default defineEventHandler(async (event) => {
             ? PaymentStatus.PENDING
             : PaymentStatus.UPON_RECEIPT,
 
-        amount: totalAmount
+        amount: pricing.totalAmount
       }
     });
 

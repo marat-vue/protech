@@ -116,6 +116,19 @@ export type ProductCollectionDetails = {
   products: ProductListItem[];
 };
 
+export type PromoCodeListItem = {
+  id: number;
+  code: string;
+  discountPercent: number;
+  isActive: boolean;
+  expiresAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  _count: {
+    orders: number;
+  };
+};
+
 export type ProductDetails = {
   id: number;
   name: string;
@@ -205,6 +218,10 @@ export type OrderListItem = {
   customerPhone: string | null;
   recipientName: string | null;
   recipientPhone: string | null;
+  promoCodeText: string | null;
+  promoDiscountPercent: number;
+  subtotalAmount: MoneyLike;
+  discountAmount: MoneyLike;
   createdAt: string;
   updatedAt: string;
   user: Pick<AdminUser, "id" | "email" | "name"> | null;

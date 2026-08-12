@@ -119,7 +119,7 @@ export default defineEventHandler(async (event) => {
       SELECT
         COUNT(DISTINCT o."id")::int AS "orders",
         COALESCE(SUM(oi."quantity"), 0)::int AS "quantity",
-        COALESCE(SUM(oi."line_total"), 0)::numeric AS "revenue",
+        COALESCE(SUM(oi."line_total" * (p."amount" / NULLIF(o."subtotal_amount", 0))), 0)::numeric AS "revenue",
         COALESCE(SUM(COALESCE(oi."cost_price", 0) * oi."quantity"), 0)::numeric AS "cost"
       FROM "payment" p
       JOIN "order" o ON o."id" = p."order_id"
@@ -134,7 +134,7 @@ export default defineEventHandler(async (event) => {
         oi."category_name" AS "categoryName",
         COUNT(DISTINCT o."id")::int AS "orders",
         COALESCE(SUM(oi."quantity"), 0)::int AS "quantity",
-        COALESCE(SUM(oi."line_total"), 0)::numeric AS "revenue",
+        COALESCE(SUM(oi."line_total" * (p."amount" / NULLIF(o."subtotal_amount", 0))), 0)::numeric AS "revenue",
         COALESCE(SUM(COALESCE(oi."cost_price", 0) * oi."quantity"), 0)::numeric AS "cost",
         COALESCE(MAX(product."current_price"), 0)::numeric AS "currentPrice",
         COALESCE(MAX(stock."quantity"), 0)::int AS "stockQuantity",
@@ -153,7 +153,7 @@ export default defineEventHandler(async (event) => {
         oi."category_name" AS "categoryName",
         COUNT(DISTINCT o."id")::int AS "orders",
         COALESCE(SUM(oi."quantity"), 0)::int AS "quantity",
-        COALESCE(SUM(oi."line_total"), 0)::numeric AS "revenue",
+        COALESCE(SUM(oi."line_total" * (p."amount" / NULLIF(o."subtotal_amount", 0))), 0)::numeric AS "revenue",
         COALESCE(SUM(COALESCE(oi."cost_price", 0) * oi."quantity"), 0)::numeric AS "cost"
       FROM "payment" p
       JOIN "order" o ON o."id" = p."order_id"
@@ -167,7 +167,7 @@ export default defineEventHandler(async (event) => {
         o."payment_method"::text AS "key",
         COUNT(DISTINCT o."id")::int AS "orders",
         COALESCE(SUM(oi."quantity"), 0)::int AS "quantity",
-        COALESCE(SUM(oi."line_total"), 0)::numeric AS "revenue"
+        COALESCE(SUM(oi."line_total" * (p."amount" / NULLIF(o."subtotal_amount", 0))), 0)::numeric AS "revenue"
       FROM "payment" p
       JOIN "order" o ON o."id" = p."order_id"
       JOIN "order_item" oi ON oi."order_id" = o."id"
@@ -180,7 +180,7 @@ export default defineEventHandler(async (event) => {
         o."obtaining_method"::text AS "key",
         COUNT(DISTINCT o."id")::int AS "orders",
         COALESCE(SUM(oi."quantity"), 0)::int AS "quantity",
-        COALESCE(SUM(oi."line_total"), 0)::numeric AS "revenue"
+        COALESCE(SUM(oi."line_total" * (p."amount" / NULLIF(o."subtotal_amount", 0))), 0)::numeric AS "revenue"
       FROM "payment" p
       JOIN "order" o ON o."id" = p."order_id"
       JOIN "order_item" oi ON oi."order_id" = o."id"
@@ -202,7 +202,7 @@ export default defineEventHandler(async (event) => {
         oi."category_name" AS "categoryName",
         oi."quantity" AS "quantity",
         oi."price" AS "price",
-        oi."line_total" AS "lineTotal",
+        oi."line_total" * (p."amount" / NULLIF(o."subtotal_amount", 0)) AS "lineTotal",
         COALESCE(oi."cost_price", 0) * oi."quantity" AS "cost"
       FROM "payment" p
       JOIN "order" o ON o."id" = p."order_id"

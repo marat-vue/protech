@@ -238,7 +238,12 @@
               </div>
 
               <div class="mt-3 flex items-center justify-between gap-4 rounded-2xl bg-emerald-50 px-4 py-3 ring-1 ring-emerald-100">
-                <span class="text-sm font-semibold text-emerald-700">Сумма заказа</span>
+                <span class="text-sm font-semibold text-emerald-700">
+                  Сумма заказа
+                  <span v-if="order.promoCodeText" class="block text-xs font-medium text-emerald-600">
+                    {{ order.promoCodeText }} · −{{ formatCurrency(order.discountAmount) }}
+                  </span>
+                </span>
                 <span class="whitespace-nowrap text-xl font-bold text-emerald-800">
                   {{ formatCurrency(order.payment?.amount) }}
                 </span>

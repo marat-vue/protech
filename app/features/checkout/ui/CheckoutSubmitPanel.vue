@@ -4,7 +4,7 @@
       <div>
         <p class="text-xs font-semibold uppercase text-white/50">К оплате</p>
         <p class="mt-1 text-3xl font-semibold tracking-normal">
-          {{ formatCurrency(subtotal) }}
+          {{ formatCurrency(totalAmount) }}
         </p>
       </div>
 
@@ -17,7 +17,38 @@
           <dt class="text-white/55">Получение</dt>
           <dd class="font-semibold">{{ deliveryLabel }}</dd>
         </div>
+        <div v-if="discountAmount > 0" class="flex items-center justify-between gap-4 text-emerald-300">
+          <dt>Скидка {{ promoDiscountPercent }}%</dt>
+          <dd class="font-semibold">−{{ formatCurrency(discountAmount) }}</dd>
+        </div>
+        <div v-if="discountAmount > 0" class="flex items-center justify-between gap-4">
+          <dt class="text-white/55">Товары без скидки</dt>
+          <dd class="font-semibold text-white/70 line-through">{{ formatCurrency(subtotal) }}</dd>
+        </div>
       </dl>
+    </div>
+
+    <div class="mt-5 rounded-3xl bg-white/8 p-3 ring-1 ring-white/10">
+      <div v-if="appliedPromoCode" class="flex items-center justify-between gap-3">
+        <div class="min-w-0">
+          <p class="text-xs font-semibold uppercase text-emerald-300">Промокод применён</p>
+          <p class="mt-1 truncate font-semibold">{{ appliedPromoCode }} · скидка {{ promoDiscountPercent }}%</p>
+        </div>
+        <UButton color="neutral" variant="ghost" icon="i-lucide-x" square
+          class="shrink-0 rounded-full text-white/70 hover:bg-white/10 hover:text-white"
+          aria-label="Удалить промокод" @click="emit('removePromo')" />
+      </div>
+      <form v-else class="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]" @submit.prevent="emit('applyPromo')">
+        <UInput :model-value="promoCode" size="lg" variant="none" placeholder="Введите промокод"
+          class="rounded-full bg-white text-zinc-950"
+          :ui="{ base: 'rounded-full uppercase placeholder:normal-case' }"
+          @update:model-value="emit('updatePromoCode', String($event))" />
+        <UButton color="neutral" variant="solid" type="submit" size="lg" :loading="promoLoading"
+          class="justify-center rounded-full bg-white px-5 text-zinc-950 hover:bg-zinc-100">
+          Применить
+        </UButton>
+      </form>
+      <p v-if="promoError" class="mt-2 px-2 text-xs leading-5 text-red-300">{{ promoError }}</p>
     </div>
 
     <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
@@ -71,14 +102,24 @@ defineProps<{
   deliveryLabel: string;
   hiddenItemsCount: number;
   onlinePayment: boolean;
+  appliedPromoCode: string;
+  discountAmount: number;
+  promoCode: string;
+  promoDiscountPercent: number;
+  promoError: string;
+  promoLoading: boolean;
   previewItems: CartItem[];
   submitError: string;
   submitting: boolean;
   subtotal: number;
+  totalAmount: number;
   totalItems: number;
 }>();
 
 const emit = defineEmits<{
+  applyPromo: [];
+  removePromo: [];
   submit: [];
+  updatePromoCode: [value: string];
 }>();
 </script>

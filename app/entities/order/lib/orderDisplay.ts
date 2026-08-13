@@ -38,6 +38,12 @@ export const orderStatusMeta: Record<OrderStatus, StatusMeta> = {
     icon: "i-lucide-circle-check",
     label: "Завершен"
   },
+  PAYMENT_REVIEW: {
+    class: "bg-orange-50 text-orange-700",
+    dotClass: "bg-orange-500",
+    icon: "i-lucide-shield-alert",
+    label: "Проверка оплаты"
+  },
   CANCELLED: {
     class: "bg-red-50 text-red-700  ",
     dotClass: "bg-red-500",
@@ -64,6 +70,18 @@ export const paymentStatusMeta: Record<PaymentStatus, StatusMeta> = {
     dotClass: "bg-emerald-500",
     icon: "i-lucide-badge-check",
     label: "Оплачен"
+  },
+  PARTIALLY_REFUNDED: {
+    class: "bg-orange-50 text-orange-700",
+    dotClass: "bg-orange-500",
+    icon: "i-lucide-undo-2",
+    label: "Частичный возврат"
+  },
+  REFUNDED: {
+    class: "bg-zinc-100 text-zinc-700",
+    dotClass: "bg-zinc-500",
+    icon: "i-lucide-rotate-ccw",
+    label: "Возвращён"
   },
   CANCELLED: {
     class: "bg-red-50 text-red-700  ",

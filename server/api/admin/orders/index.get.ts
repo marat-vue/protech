@@ -43,7 +43,18 @@ export default defineEventHandler(async (event) => {
         createdAt: true,
         updatedAt: true,
         user: { select: { id: true, name: true, email: true } },
-        payment: { select: { amount: true, paymentStatus: true } },
+        payment: {
+          select: {
+            amount: true,
+            paymentStatus: true,
+            creationStatus: true,
+            providerStatus: true,
+            lastError: true,
+            transactionId: true,
+            refundedAmount: true,
+            refundedAt: true
+          }
+        },
         delivery: {
           select: {
             address: true,

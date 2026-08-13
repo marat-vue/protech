@@ -1,11 +1,14 @@
 import {
   OrderStatus,
+  PaymentCreationStatus,
   PaymentStatus,
   Prisma,
   type Message
 } from "@prisma/client";
 import { createError, type H3Event } from "h3";
-import { reserveOrderStock, restoreOrderStock } from "./orderStock";
+import { restoreOrderStock } from "./orderStock";
+import { getOrderStatusAfterSuccessfulPayment } from "./orderState";
+import { createProviderPaymentAudit } from "./paymentTransitionAudit";
 import {
   broadcastOrderStatusChangeMessage,
   createOrderStatusChangeMessage
@@ -23,6 +26,10 @@ export type OzonPayStatusInput = {
   extId?: string | null;
   status: OzonPayOrderStatus;
   originalAmount?: {
+    currencyCode: string;
+    value: string;
+  } | null;
+  remainingAmount?: {
     currencyCode: string;
     value: string;
   } | null;
@@ -45,6 +52,31 @@ function getLocalOrderId(extId?: string | null) {
   const orderId = Number(extId);
 
   return Number.isInteger(orderId) && orderId > 0 ? orderId : null;
+}
+
+function getRefundedAmount(
+  ozonOrder: OzonPayStatusInput,
+  expectedAmount: Prisma.Decimal
+) {
+  if (ozonOrder.status === "STATUS_REFUNDED") {
+    return expectedAmount;
+  }
+
+  if (!ozonOrder.remainingAmount) {
+    return null;
+  }
+
+  if (ozonOrder.remainingAmount.currencyCode !== "643") {
+    return null;
+  }
+
+  const remainingAmount = new Prisma.Decimal(ozonOrder.remainingAmount.value).div(100);
+
+  if (remainingAmount.lt(0) || remainingAmount.gt(expectedAmount)) {
+    return null;
+  }
+
+  return expectedAmount.sub(remainingAmount);
 }
 
 export async function applyOzonPayOrderStatus(
@@ -106,9 +138,18 @@ export async function applyOzonPayOrderStatus(
     }
   }
 
+  const expectedAmount = new Prisma.Decimal(existingPayment.amount);
+
   if (ozonOrder.status === "STATUS_PAID") {
     if (existingPayment.paymentStatus === PaymentStatus.PAID) {
       return { ok: true, alreadyProcessed: true };
+    }
+
+    if (
+      existingPayment.paymentStatus === PaymentStatus.REFUNDED ||
+      existingPayment.paymentStatus === PaymentStatus.PARTIALLY_REFUNDED
+    ) {
+      return ignored("Payment has already been refunded");
     }
 
     let processed = false;
@@ -118,17 +159,17 @@ export async function applyOzonPayOrderStatus(
       const updatedPayment = await tx.payment.updateMany({
         where: {
           id: existingPayment.id,
-          paymentStatus: PaymentStatus.PENDING,
-          order: {
-            is: {
-              orderStatus: { not: OrderStatus.CANCELLED }
-            }
+          paymentStatus: {
+            in: [PaymentStatus.PENDING, PaymentStatus.CANCELLED]
           }
         },
         data: {
           transactionId: encodedTransactionId,
           paymentStatus: PaymentStatus.PAID,
-          paidAt: new Date()
+          paidAt: new Date(),
+          providerStatus: ozonOrder.status,
+          creationStatus: PaymentCreationStatus.READY,
+          lastError: null
         }
       });
 
@@ -145,22 +186,21 @@ export async function applyOzonPayOrderStatus(
         }
       });
 
-      if (!order || order.orderStatus === OrderStatus.CANCELLED) {
+      if (!order) {
         throw createError({
-          statusCode: 409,
+          statusCode: 404,
           message: "Order is not available for payment confirmation"
         });
       }
 
-      if (!order.stockReserved) {
-        await reserveOrderStock(tx, existingPayment.orderId);
-      }
+      const nextOrderStatus = order.stockReserved
+        ? getOrderStatusAfterSuccessfulPayment(order.orderStatus)
+        : OrderStatus.PAYMENT_REVIEW;
 
       await tx.order.update({
         where: { id: existingPayment.orderId },
         data: {
-          orderStatus: OrderStatus.CONFIRMED,
-          stockReserved: true
+          orderStatus: nextOrderStatus
         }
       });
 
@@ -168,17 +208,153 @@ export async function applyOzonPayOrderStatus(
         orderId: existingPayment.orderId,
         userId: order.userId,
         previousStatus: order.orderStatus,
-        nextStatus: OrderStatus.CONFIRMED
+        nextStatus: nextOrderStatus
+      });
+      await createProviderPaymentAudit(tx, {
+        paymentId: existingPayment.id,
+        orderId: existingPayment.orderId,
+        provider: "Ozon Pay",
+        providerStatus: ozonOrder.status,
+        previousPaymentStatus: existingPayment.paymentStatus,
+        nextPaymentStatus: PaymentStatus.PAID,
+        previousOrderStatus: order.orderStatus,
+        nextOrderStatus
       });
       processed = true;
     });
 
     if (!processed) {
-      return ignored("Payment is not pending or order is cancelled");
+      return ignored("Payment cannot transition to paid");
     }
 
     broadcastOrderStatusChangeMessage(statusMessage);
 
+    return { ok: true, processed: true };
+  }
+
+  if (
+    ozonOrder.status === "STATUS_REFUNDED" ||
+    ozonOrder.status === "STATUS_PARTITIONAL_REFUND" ||
+    ozonOrder.status === "STATUS_PARTITION_CANCELED"
+  ) {
+    const refundedAmount = getRefundedAmount(ozonOrder, expectedAmount);
+
+    if (!refundedAmount || refundedAmount.lte(0)) {
+      return ignored("Refund amount is missing or invalid");
+    }
+
+    const isFullRefund = refundedAmount.equals(expectedAmount);
+    const nextPaymentStatus = isFullRefund
+      ? PaymentStatus.REFUNDED
+      : PaymentStatus.PARTIALLY_REFUNDED;
+
+    if (
+      existingPayment.paymentStatus === nextPaymentStatus &&
+      new Prisma.Decimal(existingPayment.refundedAmount).equals(refundedAmount)
+    ) {
+      return { ok: true, alreadyProcessed: true };
+    }
+
+    let processed = false;
+    let statusMessage: Message | null = null;
+
+    await prisma.$transaction(async (tx) => {
+      const updatedPayment = await tx.payment.updateMany({
+        where: {
+          id: existingPayment.id,
+          paymentStatus: {
+            in: [
+              PaymentStatus.PENDING,
+              PaymentStatus.CANCELLED,
+              PaymentStatus.PAID,
+              PaymentStatus.PARTIALLY_REFUNDED
+            ]
+          }
+        },
+        data: {
+          transactionId: encodedTransactionId,
+          paymentStatus: nextPaymentStatus,
+          refundedAmount,
+          refundedAt: new Date(),
+          providerStatus: ozonOrder.status,
+          creationStatus: PaymentCreationStatus.READY,
+          lastError: null
+        }
+      });
+
+      if (updatedPayment.count !== 1) return;
+
+      const order = await tx.order.findUnique({
+        where: { id: existingPayment.orderId },
+        select: {
+          orderStatus: true,
+          userId: true,
+          stockReserved: true
+        }
+      });
+
+      if (!order) return;
+
+      let nextOrderStatus = order.orderStatus;
+      let stockReserved = order.stockReserved;
+
+      if (isFullRefund) {
+        if (
+          order.stockReserved &&
+          new Set<OrderStatus>([
+            OrderStatus.NEW,
+            OrderStatus.CONFIRMED,
+            OrderStatus.PROCESSING
+          ]).has(order.orderStatus)
+        ) {
+          await restoreOrderStock(tx, existingPayment.orderId, "Ozon Pay payment refunded");
+          stockReserved = false;
+          nextOrderStatus = OrderStatus.CANCELLED;
+        } else if (
+          order.orderStatus !== OrderStatus.CANCELLED &&
+          new Set<OrderStatus>([
+            OrderStatus.SHIPPED,
+            OrderStatus.COMPLETED
+          ]).has(order.orderStatus)
+        ) {
+          nextOrderStatus = OrderStatus.PAYMENT_REVIEW;
+        }
+      } else if (order.orderStatus === OrderStatus.CANCELLED) {
+        nextOrderStatus = OrderStatus.PAYMENT_REVIEW;
+      }
+
+      if (
+        nextOrderStatus !== order.orderStatus ||
+        stockReserved !== order.stockReserved
+      ) {
+        await tx.order.update({
+          where: { id: existingPayment.orderId },
+          data: { orderStatus: nextOrderStatus, stockReserved }
+        });
+      }
+
+      statusMessage = await createOrderStatusChangeMessage(tx, {
+        orderId: existingPayment.orderId,
+        userId: order.userId,
+        previousStatus: order.orderStatus,
+        nextStatus: nextOrderStatus
+      });
+      await createProviderPaymentAudit(tx, {
+        paymentId: existingPayment.id,
+        orderId: existingPayment.orderId,
+        provider: "Ozon Pay",
+        providerStatus: ozonOrder.status,
+        previousPaymentStatus: existingPayment.paymentStatus,
+        nextPaymentStatus,
+        previousOrderStatus: order.orderStatus,
+        nextOrderStatus
+      });
+      processed = true;
+    });
+
+    if (!processed) return ignored("Refund cannot be applied");
+
+    broadcastOrderStatusChangeMessage(statusMessage);
     return { ok: true, processed: true };
   }
 
@@ -202,7 +378,10 @@ export async function applyOzonPayOrderStatus(
         data: {
           transactionId: encodedTransactionId,
           paymentStatus: PaymentStatus.CANCELLED,
-          paidAt: null
+          paidAt: null,
+          providerStatus: ozonOrder.status,
+          creationStatus: PaymentCreationStatus.READY,
+          lastError: null
         }
       });
 
@@ -239,6 +418,18 @@ export async function applyOzonPayOrderStatus(
             nextStatus: OrderStatus.CANCELLED
           })
         : null;
+      if (order) {
+        await createProviderPaymentAudit(tx, {
+          paymentId: existingPayment.id,
+          orderId: existingPayment.orderId,
+          provider: "Ozon Pay",
+          providerStatus: ozonOrder.status,
+          previousPaymentStatus: existingPayment.paymentStatus,
+          nextPaymentStatus: PaymentStatus.CANCELLED,
+          previousOrderStatus: order.orderStatus,
+          nextOrderStatus: OrderStatus.CANCELLED
+        });
+      }
       processed = true;
     });
 
@@ -251,6 +442,19 @@ export async function applyOzonPayOrderStatus(
     return { ok: true, processed: true };
   }
 
+  await prisma.payment.updateMany({
+    where: {
+      id: existingPayment.id,
+      paymentStatus: PaymentStatus.PENDING
+    },
+    data: {
+      transactionId: encodedTransactionId,
+      providerStatus: ozonOrder.status,
+      creationStatus: PaymentCreationStatus.READY,
+      lastError: null
+    }
+  });
+
   return {
     ok: true,
     status: ozonOrder.status
@@ -258,7 +462,7 @@ export async function applyOzonPayOrderStatus(
 }
 
 export async function syncOzonPayOrderStatus(
-  event: H3Event,
+  event: H3Event | undefined,
   transactionId: string
 ) {
   const ozonOrderId = decodeOzonPayOrderId(transactionId);

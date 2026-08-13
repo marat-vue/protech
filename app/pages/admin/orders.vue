@@ -87,6 +87,14 @@
             </div>
           </header>
 
+          <div v-if="order.orderStatus === 'PAYMENT_REVIEW'" class="border-t border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-900 sm:px-5">
+            <p class="font-semibold">Требуется сверка оплаты</p>
+            <p class="mt-1 text-xs leading-5 text-orange-800">
+              {{ order.payment?.lastError || `Статус провайдера: ${order.payment?.providerStatus || 'не получен'}` }}
+              <span v-if="order.payment?.transactionId"> · {{ order.payment.transactionId }}</span>
+            </p>
+          </div>
+
           <section class="border-y border-zinc-200 bg-white px-4 py-4 sm:px-5">
             <div class="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] lg:items-end">
               <label class="block min-w-0">
@@ -97,7 +105,7 @@
                 <USelect :model-value="order.orderStatus"
                   class="w-full rounded-2xl bg-white shadow-xs shadow-black/20 ring-2 ring-white/10 border border-zinc-200"
                   size="lg" color="neutral" variant="none" icon="i-lucide-clipboard-check" :content="adminSelectContent"
-                  :items="orderStatusItems" :ui="statusSelectUi" :disabled="savingOrderId === order.id"
+                  :items="orderStatusItemsFor(order)" :ui="statusSelectUi" :disabled="savingOrderId === order.id"
                   @update:model-value="(value) => updateOrderStatus(order, value)" />
               </label>
 
@@ -109,8 +117,8 @@
                 <USelect :model-value="order.payment?.paymentStatus"
                   class="w-full rounded-2xl bg-white shadow-xs shadow-black/20 ring-2 ring-white/10  border border-zinc-200"
                   size="lg" color="neutral" variant="none" icon="i-lucide-wallet-cards" :content="adminSelectContent"
-                  :items="paymentStatusItems" :ui="statusSelectUi"
-                  :disabled="!order.payment || savingPaymentId === order.id"
+                  :items="paymentStatusItemsFor(order)" :ui="statusSelectUi"
+                  :disabled="!order.payment || order.paymentMethod === 'ONLINE' || savingPaymentId === order.id"
                   @update:model-value="(value) => updatePaymentStatus(order, value)" />
               </label>
 
@@ -430,10 +438,63 @@ const { data: ordersData, pending, error, refresh } = await useAsyncData(
 const orders = computed(() => ordersData.value?.items ?? []);
 const orderStatusItems = Object.entries(orderStatusLabels).map(([value, label]) => ({ value, label }));
 const paymentStatusItems = Object.entries(paymentStatusLabels).map(([value, label]) => ({ value, label }));
+const orderTransitions: Record<OrderStatus, OrderStatus[]> = {
+  NEW: ["CONFIRMED", "PAYMENT_REVIEW", "CANCELLED"],
+  CONFIRMED: ["PROCESSING", "PAYMENT_REVIEW", "CANCELLED"],
+  PROCESSING: ["SHIPPED", "PAYMENT_REVIEW", "CANCELLED"],
+  SHIPPED: ["COMPLETED", "PAYMENT_REVIEW"],
+  COMPLETED: ["PAYMENT_REVIEW"],
+  PAYMENT_REVIEW: ["CONFIRMED", "PROCESSING", "CANCELLED"],
+  CANCELLED: []
+};
 const orderStatusFilterItems = [
   { value: "all", label: "Все статусы" },
   ...orderStatusItems
 ];
+
+function orderStatusItemsFor(order: OrderListItem) {
+  const paymentStatus = order.payment?.paymentStatus;
+  const allowed = new Set<OrderStatus>([order.orderStatus, ...orderTransitions[order.orderStatus]]);
+
+  if (paymentStatus === "PAID" || paymentStatus === "PARTIALLY_REFUNDED") {
+    allowed.delete("CANCELLED");
+  }
+
+  if (
+    order.paymentMethod === "ONLINE" &&
+    paymentStatus !== "PAID" &&
+    paymentStatus !== "PARTIALLY_REFUNDED"
+  ) {
+    allowed.delete("PROCESSING");
+    allowed.delete("SHIPPED");
+    allowed.delete("COMPLETED");
+  }
+
+  if (order.paymentMethod === "OFFLINE" && paymentStatus !== "PAID") {
+    allowed.delete("COMPLETED");
+  }
+
+  return orderStatusItems.filter((item) => allowed.has(item.value as OrderStatus));
+}
+
+function paymentStatusItemsFor(order: OrderListItem) {
+  const current = order.payment?.paymentStatus;
+
+  if (!current || order.paymentMethod === "ONLINE") {
+    return paymentStatusItems.filter((item) => item.value === current);
+  }
+
+  const allowed = new Set<PaymentStatus>([current]);
+
+  if (current === "UPON_RECEIPT") {
+    allowed.add("PAID");
+    allowed.add("CANCELLED");
+  } else if (current === "PAID") {
+    allowed.add("REFUNDED");
+  }
+
+  return paymentStatusItems.filter((item) => allowed.has(item.value as PaymentStatus));
+}
 
 const adminSelectContent = {
   bodyLock: false,

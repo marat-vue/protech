@@ -187,7 +187,7 @@ export async function useProductPdp() {
       })
     ];
   });
-  useSchemaOrg(() => productSchemaNodes.value);
+  useSchemaOrg(productSchemaNodes);
 
   if (import.meta.server) {
     defineOgImage("NuxtSeoSatori", {

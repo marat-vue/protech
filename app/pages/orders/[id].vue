@@ -196,13 +196,54 @@ onMounted(async () => {
   }
 
   try {
-    order.value = await shopFetch<ShopOrder>(`/api/public/orders/${route.params.id}`);
+    await loadOrder();
+
+    if (route.query.payment) {
+      await reconcilePaymentReturn();
+    }
   } catch (error) {
     toast.error(getErrorMessage(error, "Не удалось загрузить заказ"));
   } finally {
     loading.value = false;
   }
 });
+
+async function loadOrder() {
+  order.value = await shopFetch<ShopOrder>(`/api/public/orders/${route.params.id}`);
+}
+
+async function reconcilePaymentReturn() {
+  const maxAttempts = 8;
+
+  for (let attempt = 1; attempt < maxAttempts; attempt += 1) {
+    if (order.value?.payment?.paymentStatus !== "PENDING") {
+      break;
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+    await loadOrder();
+  }
+
+  const paymentStatus = order.value?.payment?.paymentStatus;
+
+  if (paymentStatus === "PAID") {
+    toast.success("Оплата подтверждена");
+  } else if (paymentStatus === "PARTIALLY_REFUNDED") {
+    toast.warning("По платежу оформлен частичный возврат");
+  } else if (paymentStatus === "REFUNDED") {
+    toast.info("Платёж возвращён");
+  } else if (paymentStatus === "CANCELLED") {
+    toast.error("Оплата не состоялась");
+  } else if (order.value?.orderStatus === "PAYMENT_REVIEW") {
+    toast.warning("Результат оплаты проверяется");
+  } else {
+    toast.warning("Подтверждение оплаты задерживается — статус обновится автоматически");
+  }
+
+  const query = { ...route.query };
+  delete query.payment;
+  await navigateTo({ path: route.path, query }, { replace: true });
+}
 
 function isStepActive(status: OrderStatus | undefined, activeStatuses: OrderStatus[]) {
   return Boolean(status && activeStatuses.includes(status));

@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import {
   getCategoryOptions,
   getPaidSalesFilters,
@@ -23,13 +24,20 @@ export default defineEventHandler(async (event) => {
 
   const query = parseAnalyticsQuery(event);
   const filters = getPaidSalesFilters(query);
+  const categoryFilter = query.categoryId
+    ? Prisma.sql`AND EXISTS (
+        SELECT 1 FROM "order_item" category_item
+        WHERE category_item."order_id" = o."id"
+          AND category_item."category_id" = ${query.categoryId}
+      )`
+    : Prisma.empty;
 
   const [salesRows, paymentMethodRows, obtainingMethodRows, categoryOptions] = await Promise.all([
     prisma.$queryRaw<SalesTotalsRow[]>`
       SELECT
         COUNT(DISTINCT o."id")::int AS "orders",
         COALESCE(SUM(oi."quantity"), 0)::int AS "quantity",
-        COALESCE(SUM(oi."line_total" * (p."amount" / NULLIF(o."subtotal_amount", 0))), 0)::numeric AS "revenue",
+        COALESCE(SUM(oi."line_total" * ((p."amount" - p."refunded_amount") / NULLIF(o."subtotal_amount", 0))), 0)::numeric AS "revenue",
         COALESCE(SUM(COALESCE(oi."cost_price", 0) * oi."quantity"), 0)::numeric AS "cost"
       FROM "payment" p
       JOIN "order" o ON o."id" = p."order_id"
@@ -40,11 +48,14 @@ export default defineEventHandler(async (event) => {
       SELECT
         o."payment_method"::text AS "key",
         COUNT(DISTINCT o."id")::int AS "orders",
-        COALESCE(SUM(p."amount"), 0)::numeric AS "revenue"
-      FROM "order" o
-      LEFT JOIN "payment" p ON p."order_id" = o."id" AND p."payment_status" = 'PAID'
-      WHERE o."created_at" >= ${query.startDate}
-        AND o."created_at" <= ${query.endDate}
+        COALESCE(SUM(p."amount" - p."refunded_amount"), 0)::numeric AS "revenue"
+      FROM "payment" p
+      JOIN "order" o ON o."id" = p."order_id"
+      WHERE p."payment_status" IN ('PAID', 'PARTIALLY_REFUNDED')
+        AND p."paid_at" >= ${query.startDate}
+        AND p."paid_at" <= ${query.endDate}
+        AND o."order_status" <> 'CANCELLED'
+        ${categoryFilter}
       GROUP BY 1
       ORDER BY 2 DESC
     `,
@@ -52,11 +63,14 @@ export default defineEventHandler(async (event) => {
       SELECT
         o."obtaining_method"::text AS "key",
         COUNT(DISTINCT o."id")::int AS "orders",
-        COALESCE(SUM(p."amount"), 0)::numeric AS "revenue"
-      FROM "order" o
-      LEFT JOIN "payment" p ON p."order_id" = o."id" AND p."payment_status" = 'PAID'
-      WHERE o."created_at" >= ${query.startDate}
-        AND o."created_at" <= ${query.endDate}
+        COALESCE(SUM(p."amount" - p."refunded_amount"), 0)::numeric AS "revenue"
+      FROM "payment" p
+      JOIN "order" o ON o."id" = p."order_id"
+      WHERE p."payment_status" IN ('PAID', 'PARTIALLY_REFUNDED')
+        AND p."paid_at" >= ${query.startDate}
+        AND p."paid_at" <= ${query.endDate}
+        AND o."order_status" <> 'CANCELLED'
+        ${categoryFilter}
       GROUP BY 1
       ORDER BY 2 DESC
     `,

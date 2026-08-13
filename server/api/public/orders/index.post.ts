@@ -1,17 +1,44 @@
 import {
   OrderStatus,
+  PaymentCreationStatus,
   PaymentStatus,
   Prisma
 } from "@prisma/client";
-import { getOrderPaymentExpiresAt } from "~~/server/utils/orderExpiry";
-import { reserveProductStock, restoreOrderStock } from "~~/server/utils/orderStock";
-import { createOzonPayOrder, encodeOzonPayOrderId } from "~~/server/utils/ozonPay";
+import { createOrderRequestFingerprint, getOrderIdempotencyKey } from "~~/server/utils/orderIdempotency";
+import { reserveProductStock } from "~~/server/utils/orderStock";
+import { ensureOzonPayCheckout } from "~~/server/utils/ozonPayCheckout";
 import { assertPromoCodeIsAvailable, calculatePromoPricing } from "~~/server/utils/promoCode";
 import { createOrderSchema } from "~~/shared/schemas/user/orders/createOrder";
 
 export default defineEventHandler(async (event) => {
   const { user } = await requireUser(event);
   const body = await validateBody(event, createOrderSchema);
+  const idempotencyKey = getOrderIdempotencyKey(event);
+  const requestFingerprint = createOrderRequestFingerprint(body);
+
+  const existingOrder = await prisma.order.findUnique({
+    where: { idempotencyKey },
+    select: {
+      id: true,
+      userId: true,
+      requestFingerprint: true,
+      paymentMethod: true
+    }
+  });
+
+  if (existingOrder) {
+    if (
+      existingOrder.userId !== user.id ||
+      existingOrder.requestFingerprint !== requestFingerprint
+    ) {
+      throw createError({
+        statusCode: 409,
+        message: "Idempotency-Key уже использован для другого заказа"
+      });
+    }
+
+    return buildCreateOrderResponse(event, existingOrder.id, existingOrder.paymentMethod);
+  }
 
   const orderId = await prisma.$transaction(async (tx) => {
     const productIds = body.orderItems.map((item) => item.productId);
@@ -136,6 +163,8 @@ export default defineEventHandler(async (event) => {
         recipientName: body.recipient?.name,
         recipientPhone: body.recipient?.phone,
         stockReserved: true,
+        idempotencyKey,
+        requestFingerprint,
         promoCodeId: promoCode?.id,
         promoCodeText: promoCode?.code,
         promoDiscountPercent: promoCode?.discountPercent ?? 0,
@@ -192,6 +221,10 @@ export default defineEventHandler(async (event) => {
           body.paymentMethod === "ONLINE"
             ? PaymentStatus.PENDING
             : PaymentStatus.UPON_RECEIPT,
+        creationStatus:
+          body.paymentMethod === "ONLINE"
+            ? PaymentCreationStatus.NOT_STARTED
+            : PaymentCreationStatus.NOT_REQUIRED,
 
         amount: pricing.totalAmount
       }
@@ -203,7 +236,28 @@ export default defineEventHandler(async (event) => {
     });
 
     return createdOrder.id;
-  }).catch((error) => {
+  }).catch(async (error) => {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      const duplicate = await prisma.order.findUnique({
+        where: { idempotencyKey },
+        select: {
+          id: true,
+          userId: true,
+          requestFingerprint: true
+        }
+      });
+
+      if (
+        duplicate?.userId === user.id &&
+        duplicate.requestFingerprint === requestFingerprint
+      ) {
+        return duplicate.id;
+      }
+    }
+
     const prismaError = toPrismaHttpError(error, {
       P2003: "Один или несколько товаров не найдены"
     });
@@ -215,25 +269,18 @@ export default defineEventHandler(async (event) => {
     throw error;
   });
 
-  const order = await prisma.order.findUniqueOrThrow({
-    where: {
-      id: orderId
-    },
-    select: {
-      id: true,
-      createdAt: true,
-      payment: {
-        select: {
-          amount: true
-        }
-      }
-    }
-  });
+  return buildCreateOrderResponse(event, orderId, body.paymentMethod);
+});
 
-  if (body.paymentMethod === "OFFLINE") {
+async function buildCreateOrderResponse(
+  event: Parameters<typeof ensureOzonPayCheckout>[0],
+  orderId: number,
+  paymentMethod: "OFFLINE" | "ONLINE"
+) {
+  if (paymentMethod === "OFFLINE") {
     return {
       order: {
-        id: order.id
+        id: orderId
       },
       payment: {
         type: "offline",
@@ -242,52 +289,40 @@ export default defineEventHandler(async (event) => {
     };
   }
 
-  const ozonPayOrder = await createOzonPayOrder(event, {
-    orderId: order.id,
-    amount: order.payment!.amount,
-    expiresAt: getOrderPaymentExpiresAt(order.createdAt)
-  }).catch(async (error) => {
-    await prisma.$transaction(async (tx) => {
-      await restoreOrderStock(tx, order.id, "Ozon Pay order creation failed");
+  let checkout;
 
-      await tx.payment.update({
-        where: { orderId: order.id },
-        data: {
-          paymentStatus: PaymentStatus.CANCELLED,
-          paidAt: null
-        }
-      });
-
-      await tx.order.update({
-        where: { id: order.id },
-        data: {
-          orderStatus: OrderStatus.CANCELLED,
-          stockReserved: false
-        }
-      });
+  try {
+    checkout = await ensureOzonPayCheckout(event, orderId);
+  } catch (error) {
+    const payment = await prisma.payment.findUnique({
+      where: { orderId },
+      select: {
+        creationStatus: true,
+        providerStatus: true
+      }
     });
 
-    throw error;
-  });
-
-  await prisma.payment.update({
-    where: {
-      orderId: order.id
-    },
-    data: {
-      transactionId: encodeOzonPayOrderId(ozonPayOrder.id),
-      confirmationUrl: ozonPayOrder.payLink
+    if (
+      payment?.creationStatus === PaymentCreationStatus.CREATING ||
+      payment?.creationStatus === PaymentCreationStatus.UNKNOWN
+    ) {
+      checkout = {
+        status: payment.providerStatus ?? payment.creationStatus,
+        confirmationUrl: null
+      };
+    } else {
+      throw error;
     }
-  });
+  }
 
   return {
     order: {
-      id: order.id
+      id: orderId
     },
     payment: {
       type: "ozon",
-      status: ozonPayOrder.status,
-      confirmationUrl: ozonPayOrder.payLink
+      status: checkout.status,
+      confirmationUrl: checkout.confirmationUrl
     }
   };
-});
+}

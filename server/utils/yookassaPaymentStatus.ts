@@ -1,11 +1,14 @@
 import {
   OrderStatus,
+  PaymentCreationStatus,
   PaymentStatus,
   Prisma,
   type Message
 } from "@prisma/client";
 import { createError, type H3Event } from "h3";
-import { reserveOrderStock, restoreOrderStock } from "./orderStock";
+import { restoreOrderStock } from "./orderStock";
+import { getOrderStatusAfterSuccessfulPayment } from "./orderState";
+import { createProviderPaymentAudit } from "./paymentTransitionAudit";
 import {
   broadcastOrderStatusChangeMessage,
   createOrderStatusChangeMessage
@@ -91,7 +94,11 @@ export async function applyYooKassaPaymentStatus(
   }
 
   if (payment.status === "succeeded" && payment.paid) {
-    if (existingPayment.paymentStatus === PaymentStatus.PAID) {
+    if (
+      existingPayment.paymentStatus === PaymentStatus.PAID ||
+      existingPayment.paymentStatus === PaymentStatus.PARTIALLY_REFUNDED ||
+      existingPayment.paymentStatus === PaymentStatus.REFUNDED
+    ) {
       return { ok: true, alreadyProcessed: true };
     }
 
@@ -102,16 +109,16 @@ export async function applyYooKassaPaymentStatus(
       const updatedPayment = await tx.payment.updateMany({
         where: {
           id: existingPayment.id,
-          paymentStatus: PaymentStatus.PENDING,
-          order: {
-            is: {
-              orderStatus: { not: OrderStatus.CANCELLED }
-            }
+          paymentStatus: {
+            in: [PaymentStatus.PENDING, PaymentStatus.CANCELLED]
           }
         },
         data: {
           transactionId: payment.id,
           paymentStatus: PaymentStatus.PAID,
+          providerStatus: payment.status,
+          creationStatus: PaymentCreationStatus.READY,
+          lastError: null,
           paidAt: new Date(),
           amount: actualAmount
         }
@@ -130,22 +137,21 @@ export async function applyYooKassaPaymentStatus(
         }
       });
 
-      if (!order || order.orderStatus === OrderStatus.CANCELLED) {
+      if (!order) {
         throw createError({
           statusCode: 409,
           message: "Order is not available for payment confirmation"
         });
       }
 
-      if (!order.stockReserved) {
-        await reserveOrderStock(tx, existingPayment.orderId);
-      }
+      const nextStatus = order.stockReserved
+        ? getOrderStatusAfterSuccessfulPayment(order.orderStatus)
+        : OrderStatus.PAYMENT_REVIEW;
 
       await tx.order.update({
         where: { id: existingPayment.orderId },
         data: {
-          orderStatus: OrderStatus.CONFIRMED,
-          stockReserved: true
+          orderStatus: nextStatus
         }
       });
 
@@ -153,13 +159,23 @@ export async function applyYooKassaPaymentStatus(
         orderId: existingPayment.orderId,
         userId: order.userId,
         previousStatus: order.orderStatus,
-        nextStatus: OrderStatus.CONFIRMED
+        nextStatus
+      });
+      await createProviderPaymentAudit(tx, {
+        paymentId: existingPayment.id,
+        orderId: existingPayment.orderId,
+        provider: "YooKassa",
+        providerStatus: payment.status,
+        previousPaymentStatus: existingPayment.paymentStatus,
+        nextPaymentStatus: PaymentStatus.PAID,
+        previousOrderStatus: order.orderStatus,
+        nextOrderStatus: nextStatus
       });
       processed = true;
     });
 
     if (!processed) {
-      return ignored("Payment is not pending or order is cancelled");
+      return ignored("Payment is not pending or cancelled");
     }
 
     broadcastOrderStatusChangeMessage(statusMessage);
@@ -184,6 +200,9 @@ export async function applyYooKassaPaymentStatus(
         data: {
           transactionId: payment.id,
           paymentStatus: PaymentStatus.CANCELLED,
+          providerStatus: payment.status,
+          creationStatus: PaymentCreationStatus.READY,
+          lastError: null,
           paidAt: null
         }
       });
@@ -221,6 +240,18 @@ export async function applyYooKassaPaymentStatus(
             nextStatus: OrderStatus.CANCELLED
           })
         : null;
+      if (order) {
+        await createProviderPaymentAudit(tx, {
+          paymentId: existingPayment.id,
+          orderId: existingPayment.orderId,
+          provider: "YooKassa",
+          providerStatus: payment.status,
+          previousPaymentStatus: existingPayment.paymentStatus,
+          nextPaymentStatus: PaymentStatus.CANCELLED,
+          previousOrderStatus: order.orderStatus,
+          nextOrderStatus: OrderStatus.CANCELLED
+        });
+      }
       processed = true;
     });
 
@@ -233,6 +264,19 @@ export async function applyYooKassaPaymentStatus(
     return { ok: true, processed: true };
   }
 
+  await prisma.payment.updateMany({
+    where: {
+      id: existingPayment.id,
+      paymentStatus: PaymentStatus.PENDING
+    },
+    data: {
+      transactionId: payment.id,
+      providerStatus: payment.status,
+      creationStatus: PaymentCreationStatus.READY,
+      lastError: null
+    }
+  });
+
   return {
     ok: true,
     status: payment.status
@@ -240,7 +284,7 @@ export async function applyYooKassaPaymentStatus(
 }
 
 export async function syncYooKassaPaymentStatus(
-  event: H3Event,
+  event: H3Event | undefined,
   paymentId: string
 ) {
   const payment = await getYooKassaPayment(event, paymentId);

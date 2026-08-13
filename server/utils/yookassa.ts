@@ -55,7 +55,7 @@ type YooKassaReceipt = {
   tax_system_code?: number;
 };
 
-function getYooKassaAuth(event: H3Event) {
+function getYooKassaAuth(event?: H3Event) {
   const config = useRuntimeConfig(event);
 
   const shopId = config.yookassaShopId;
@@ -232,7 +232,7 @@ export function getYooKassaReceiptTotal(receipt: Pick<YooKassaReceipt, "items">)
   );
 }
 
-function getYooKassaApiUrl(event: H3Event) {
+function getYooKassaApiUrl(event?: H3Event) {
   const config = useRuntimeConfig(event);
   const url = String(config.yookassaApiUrl || "https://api.yookassa.ru");
 
@@ -240,7 +240,7 @@ function getYooKassaApiUrl(event: H3Event) {
 }
 
 async function fetchYooKassa(
-  event: H3Event,
+  event: H3Event | undefined,
   path: string,
   init: RequestInit
 ) {
@@ -413,7 +413,7 @@ export async function createYooKassaPayment(
   return (await response.json()) as YooKassaPayment;
 }
 
-export async function getYooKassaPayment(event: H3Event, paymentId: string) {
+export async function getYooKassaPayment(event: H3Event | undefined, paymentId: string) {
   const response = await fetchYooKassa(event, `/v3/payments/${paymentId}`, {
     method: "GET",
     headers: {

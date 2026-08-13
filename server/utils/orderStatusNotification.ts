@@ -22,6 +22,7 @@ const orderStatusLabels: Record<OrderStatus, string> = {
   [OrderStatus.PROCESSING]: "\u0412 \u0440\u0430\u0431\u043e\u0442\u0435",
   [OrderStatus.SHIPPED]: "\u041e\u0442\u043f\u0440\u0430\u0432\u043b\u0435\u043d",
   [OrderStatus.COMPLETED]: "\u0417\u0430\u0432\u0435\u0440\u0448\u0435\u043d",
+  [OrderStatus.PAYMENT_REVIEW]: "Проверка оплаты",
   [OrderStatus.CANCELLED]: "\u041e\u0442\u043c\u0435\u043d\u0435\u043d"
 };
 

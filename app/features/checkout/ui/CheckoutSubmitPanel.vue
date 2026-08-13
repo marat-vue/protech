@@ -28,6 +28,10 @@
       </dl>
     </div>
 
+    <p v-if="deliveryCostPending" class="mt-3 text-xs leading-5 text-amber-200/90">
+      В сумму входит только товар. Стоимость доставки менеджер рассчитает и согласует отдельно.
+    </p>
+
     <div class="mt-5 rounded-3xl bg-white/8 p-3 ring-1 ring-white/10">
       <div v-if="appliedPromoCode" class="flex items-center justify-between gap-3">
         <div class="min-w-0">
@@ -99,6 +103,7 @@ import { formatCurrency } from "~~/app/shared/lib/shopFormatters";
 import type { CartItem } from "~~/app/shared/types/shop";
 
 defineProps<{
+  deliveryCostPending: boolean;
   deliveryLabel: string;
   hiddenItemsCount: number;
   onlinePayment: boolean;

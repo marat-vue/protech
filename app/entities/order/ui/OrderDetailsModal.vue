@@ -29,7 +29,7 @@ import {
   obtainingMethodLabels,
   paymentMethodLabels
 } from "~~/app/entities/order/lib/orderDisplay";
-import { formatDateTime } from "~~/app/shared/lib/shopFormatters";
+import { formatCurrency, formatDateTime } from "~~/app/shared/lib/shopFormatters";
 import type { OrderStatus, OrderStatusHistoryItem, ShopOrder } from "~~/app/shared/types/shop";
 
 type TrackingState = "done" | "current" | "todo" | "cancelled";
@@ -146,6 +146,11 @@ const currentState = computed(() => {
       icon: "i-lucide-circle-check",
       title: "Заказ получен"
     },
+    PAYMENT_REVIEW: {
+      description: "Мы сверяем результат операции с платёжным провайдером. Заказ сохранён, повторно оплачивать его не нужно.",
+      icon: "i-lucide-shield-alert",
+      title: "Проверяем оплату"
+    },
     CANCELLED: {
       description: "",
       icon: "i-lucide-circle-x",
@@ -217,6 +222,15 @@ const trackingSteps = computed<TrackingStep[]>(() => {
       state: "cancelled",
       status: "CANCELLED"
     });
+  } else if (order.value.orderStatus === "PAYMENT_REVIEW") {
+    steps.push({
+      date: order.value.updatedAt,
+      description: "Проверяем платёж и состояние резерва. Следующий статус будет установлен после сверки.",
+      icon: "i-lucide-shield-alert",
+      label: "Проверка оплаты",
+      state: "current",
+      status: "PAYMENT_REVIEW"
+    });
   }
 
   return steps;
@@ -242,6 +256,20 @@ const paymentRows = computed<InfoRow[]>(() => {
     rows.push({
       label: "Оплачено",
       value: formatDateTime(order.value.payment.paidAt)
+    });
+  }
+
+  if (Number(order.value.payment?.refundedAmount ?? 0) > 0) {
+    rows.push({
+      label: "Возвращено",
+      value: formatCurrency(order.value.payment?.refundedAmount)
+    });
+  }
+
+  if (order.value.payment?.refundedAt) {
+    rows.push({
+      label: "Дата возврата",
+      value: formatDateTime(order.value.payment.refundedAt)
     });
   }
 

@@ -47,7 +47,10 @@ export const publicOrderSelect = {
       id: true,
       amount: true,
       paymentStatus: true,
+      creationStatus: true,
       paidAt: true,
+      refundedAmount: true,
+      refundedAt: true,
       transactionId: true
     }
   }
@@ -91,7 +94,10 @@ export function toPublicOrderDto(order: PublicOrderWithMeta) {
       ? {
           amount: order.payment.amount,
           paymentStatus: order.payment.paymentStatus,
-          paidAt: order.payment.paidAt
+          creationStatus: order.payment.creationStatus,
+          paidAt: order.payment.paidAt,
+          refundedAmount: order.payment.refundedAmount,
+          refundedAt: order.payment.refundedAt
         }
       : null,
     orderItems: order.orderItems

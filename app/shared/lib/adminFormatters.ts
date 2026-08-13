@@ -31,6 +31,7 @@ export const orderStatusLabels: Record<OrderStatus, string> = {
   PROCESSING: "В работе",
   SHIPPED: "Отправлен",
   COMPLETED: "Завершен",
+  PAYMENT_REVIEW: "Проверка оплаты",
   CANCELLED: "Отменен"
 };
 
@@ -38,6 +39,8 @@ export const paymentStatusLabels: Record<PaymentStatus, string> = {
   PENDING: "Ожидает",
   UPON_RECEIPT: "При получении",
   PAID: "Оплачен",
+  PARTIALLY_REFUNDED: "Частично возвращён",
+  REFUNDED: "Возвращён",
   CANCELLED: "Отменен"
 };
 
@@ -66,6 +69,7 @@ export const orderStatusColor: Record<OrderStatus, "neutral" | "primary" | "warn
   PROCESSING: "warning",
   SHIPPED: "primary",
   COMPLETED: "success",
+  PAYMENT_REVIEW: "warning",
   CANCELLED: "error"
 };
 
@@ -73,6 +77,8 @@ export const paymentStatusColor: Record<PaymentStatus, "neutral" | "primary" | "
   PENDING: "warning",
   UPON_RECEIPT: "info",
   PAID: "success",
+  PARTIALLY_REFUNDED: "warning",
+  REFUNDED: "neutral",
   CANCELLED: "error"
 };
 

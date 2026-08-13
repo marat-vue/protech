@@ -10,9 +10,15 @@ type RecordAdminAuditInput = {
   metadata?: Prisma.InputJsonValue;
 };
 
-export async function recordAdminAudit(input: RecordAdminAuditInput) {
+type AuditClient = Pick<Prisma.TransactionClient, "auditLog">;
+
+export async function recordAdminAudit(
+  input: RecordAdminAuditInput,
+  client: AuditClient = prisma,
+  options: { suppressErrors?: boolean } = {}
+) {
   try {
-    await prisma.auditLog.create({
+    await client.auditLog.create({
       data: {
         adminId: input.adminId ?? null,
         action: input.action,
@@ -23,6 +29,10 @@ export async function recordAdminAudit(input: RecordAdminAuditInput) {
       }
     });
   } catch (error) {
+    if (options.suppressErrors === false) {
+      throw error;
+    }
+
     console.error("Failed to write admin audit log", error);
   }
 }

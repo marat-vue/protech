@@ -6,17 +6,22 @@
       <div class="min-w-0">
         <p class="inline-flex items-center gap-2 text-sm font-semibold">
           <UIcon name="i-lucide-clock-3" class="size-4 shrink-0" />
-          Ожидает оплаты
+          {{ isCreationUncertain ? "Проверяем платёжную ссылку" : "Ожидает оплаты" }}
         </p>
         <p class="mt-1 text-sm leading-6 text-blue-900/70">
-          Ozon Pay · до автоматической отмены: <span class="font-semibold text-blue-950">{{ formattedRemaining }}</span>
+          <template v-if="isCreationUncertain">
+            Не создавайте новый заказ: результат запроса к Ozon Pay ещё уточняется.
+          </template>
+          <template v-else>
+            Ozon Pay · до автоматической отмены: <span class="font-semibold text-blue-950">{{ formattedRemaining }}</span>
+          </template>
         </p>
       </div>
 
-      <UButton color="primary" icon="i-lucide-credit-card" :loading="submitting" :disabled="remainingSeconds <= 0"
+      <UButton color="primary" icon="i-lucide-credit-card" :loading="submitting" :disabled="remainingSeconds <= 0 || isCreationUncertain"
         class="min-h-11 justify-center rounded-full bg-[#005bff] px-5 font-semibold text-white hover:bg-[#004ee0]"
         :class="compact ? 'w-full sm:w-auto' : 'w-full sm:min-w-48 sm:w-auto'" @click.stop="resumePayment">
-        {{ remainingSeconds > 0 ? "Перейти в Ozon Pay" : "Время истекло" }}
+        {{ isCreationUncertain ? "Идёт проверка" : remainingSeconds > 0 ? "Перейти в Ozon Pay" : "Время истекло" }}
       </UButton>
     </div>
 
@@ -52,8 +57,12 @@ let timer: ReturnType<typeof setInterval> | undefined;
 
 const isPendingPayment = computed(() => (
   props.order.paymentMethod === "ONLINE" &&
-  props.order.orderStatus !== "CANCELLED" &&
+  props.order.orderStatus === "NEW" &&
   props.order.payment?.paymentStatus === "PENDING"
+));
+const isCreationUncertain = computed(() => (
+  props.order.payment?.creationStatus === "CREATING" ||
+  props.order.payment?.creationStatus === "UNKNOWN"
 ));
 const totalSeconds = computed(() => {
   const expiresAt = getExpiresAtTime();

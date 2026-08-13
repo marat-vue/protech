@@ -46,7 +46,7 @@
         <CheckoutDeliveryMap :city="draft.city" :delivery-method="draft.deliveryMethod" :house="draft.house"
           :obtaining-method="draft.obtainingMethod" :street="draft.street" />
 
-        <CheckoutSubmitPanel :delivery-label="deliveryLabel" :hidden-items-count="hiddenCheckoutItemsCount"
+        <CheckoutSubmitPanel :delivery-cost-pending="isDelivery" :delivery-label="deliveryLabel" :hidden-items-count="hiddenCheckoutItemsCount"
           :online-payment="isDelivery || draft.paymentMethod === 'ONLINE'"
           :preview-items="checkoutPreviewItems" :submit-error="submitError" :submitting="submitting"
           :subtotal="cart.subtotal" :total-items="cart.totalItems" :total-amount="checkoutTotal"
@@ -111,12 +111,13 @@ const promoCodeInput = ref("");
 const promoError = ref("");
 const promoLoading = ref(false);
 const appliedPromo = ref<AppliedPromo | null>(null);
+const orderIdempotencyKey = ref<string | null>(null);
 const fieldErrors = reactive<Record<string, string | undefined>>({});
 const obtainingOptions: Array<CheckoutChoice<ObtainingMethod>> = [
   {
     value: "DELIVERY",
     title: "Доставка",
-    description: "Курьерская доставка OZON или СДЭК по указанному адресу.",
+    description: "Желаемая служба — OZON или СДЭК. Стоимость и оформление подтвердит менеджер.",
     icon: "i-lucide-truck"
   },
   {
@@ -132,13 +133,13 @@ const deliveryOptions: Array<CheckoutChoice<DeliveryMethod>> = [
   {
     value: "OZON",
     title: "OZON",
-    description: "Доставка через службу OZON по адресу заказа.",
+    description: "Предпочтительная служба. Менеджер подтвердит возможность и стоимость.",
     icon: "i-lucide-truck"
   },
   {
     value: "CDEK",
     title: "СДЭК",
-    description: "Доставка через СДЭК по адресу заказа.",
+    description: "Предпочтительная служба. Менеджер подтвердит возможность и стоимость.",
     icon: "i-lucide-package-check"
   }
 ];
@@ -171,6 +172,19 @@ const paymentOptions = computed<Array<CheckoutChoice<PaymentMethod>>>(() => [
     disabled: isDelivery.value
   }
 ]);
+
+watch(
+  () => JSON.stringify({
+    draft,
+    orderItems: cart.orderItems,
+    promoCode: appliedPromo.value?.code ?? null
+  }),
+  () => {
+    if (!submitting.value) {
+      orderIdempotencyKey.value = null;
+    }
+  }
+);
 
 onMounted(async () => {
   draft.deliveryMethod = draft.deliveryMethod ?? "OZON";
@@ -325,6 +339,10 @@ function removePromoCode() {
 }
 
 async function submitOrder() {
+  if (submitting.value) {
+    return;
+  }
+
   submitError.value = "";
 
   const contactValid = validateContact();
@@ -336,10 +354,14 @@ async function submitOrder() {
   }
 
   submitting.value = true;
+  orderIdempotencyKey.value ??= createIdempotencyKey();
 
   try {
     const result = await shopFetch<CreateOrderResponse>("/api/public/orders", {
       method: "POST",
+      headers: {
+        "Idempotency-Key": orderIdempotencyKey.value
+      },
       body: {
         obtainingMethod: draft.obtainingMethod,
         paymentMethod: isDelivery.value ? "ONLINE" : draft.paymentMethod,
@@ -374,6 +396,7 @@ async function submitOrder() {
       cart.items = [];
     });
     cart.resetCheckoutDraft();
+    orderIdempotencyKey.value = null;
     toast.success("Заказ создан");
 
     if (result.payment.confirmationUrl) {
@@ -388,5 +411,13 @@ async function submitOrder() {
   } finally {
     submitting.value = false;
   }
+}
+
+function createIdempotencyKey() {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return crypto.randomUUID();
+  }
+
+  return `order_${Date.now()}_${Math.random().toString(36).slice(2)}`;
 }
 </script>

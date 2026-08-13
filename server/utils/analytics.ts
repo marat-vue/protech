@@ -112,7 +112,7 @@ export function toNumber(value: unknown) {
 
 export function getPaidSalesFilters(query: AnalyticsQuery) {
   const filters: Prisma.Sql[] = [
-    Prisma.sql`p."payment_status" = 'PAID'`,
+    Prisma.sql`p."payment_status" IN ('PAID', 'PARTIALLY_REFUNDED')`,
     Prisma.sql`p."paid_at" IS NOT NULL`,
     Prisma.sql`p."paid_at" >= ${query.startDate}`,
     Prisma.sql`p."paid_at" <= ${query.endDate}`,

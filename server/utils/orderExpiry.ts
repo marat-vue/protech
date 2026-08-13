@@ -1,10 +1,14 @@
 import {
   OrderStatus,
+  PaymentCreationStatus,
   PaymentMethod,
-  PaymentStatus
+  PaymentStatus,
+  type Message
 } from "@prisma/client";
+import type { H3Event } from "h3";
 import { prisma } from "./prisma";
 import { restoreProductStock } from "./orderStock";
+import { syncOnlinePaymentStatus } from "./onlinePaymentStatus";
 import {
   broadcastOrderStatusChangeMessage,
   createOrderStatusChangeMessage
@@ -15,6 +19,7 @@ export type ExpireUnpaidOrdersOptions = {
   expiresBefore?: Date;
   now?: Date;
   batchSize?: number;
+  event?: H3Event;
 };
 
 export type ExpireUnpaidOrdersResult = {
@@ -61,7 +66,13 @@ export async function expireUnpaidOrders(
       }
     },
     select: {
-      id: true
+      id: true,
+      payment: {
+        select: {
+          transactionId: true,
+          creationStatus: true
+        }
+      }
     },
     orderBy: {
       createdAt: "asc"
@@ -72,6 +83,78 @@ export async function expireUnpaidOrders(
   const expiredOrderIds: number[] = [];
 
   for (const candidate of candidates) {
+    if (candidate.payment?.transactionId) {
+      try {
+        await syncOnlinePaymentStatus(options.event, candidate.payment.transactionId);
+      } catch (error) {
+        console.error("Failed to reconcile online payment before expiry", {
+          orderId: candidate.id,
+          error
+        });
+      }
+
+      // A provider-registered payment must only be closed from provider state.
+      // This avoids releasing stock while a delayed success callback is in flight.
+      continue;
+    }
+
+    if (
+      candidate.payment?.creationStatus === PaymentCreationStatus.CREATING ||
+      candidate.payment?.creationStatus === PaymentCreationStatus.UNKNOWN ||
+      candidate.payment?.creationStatus === PaymentCreationStatus.READY
+    ) {
+      let statusMessage: Message | null = null;
+
+      await prisma.$transaction(async (tx) => {
+        const order = await tx.order.findUnique({
+          where: { id: candidate.id },
+          select: {
+            orderStatus: true,
+            userId: true
+          }
+        });
+
+        if (!order || order.orderStatus === OrderStatus.PAYMENT_REVIEW) {
+          return;
+        }
+
+        const updated = await tx.order.updateMany({
+          where: {
+            id: candidate.id,
+            orderStatus: { not: OrderStatus.CANCELLED },
+            payment: {
+              is: {
+                paymentStatus: PaymentStatus.PENDING,
+                transactionId: null,
+                creationStatus: {
+                  in: [
+                    PaymentCreationStatus.CREATING,
+                    PaymentCreationStatus.UNKNOWN,
+                    PaymentCreationStatus.READY
+                  ]
+                }
+              }
+            }
+          },
+          data: {
+            orderStatus: OrderStatus.PAYMENT_REVIEW
+          }
+        });
+
+        if (updated.count === 1) {
+          statusMessage = await createOrderStatusChangeMessage(tx, {
+            orderId: candidate.id,
+            userId: order.userId,
+            previousStatus: order.orderStatus,
+            nextStatus: OrderStatus.PAYMENT_REVIEW
+          });
+        }
+      });
+
+      broadcastOrderStatusChangeMessage(statusMessage);
+      continue;
+    }
+
     const result = await prisma.$transaction(async (tx) => {
       const order = await tx.order.findUnique({
         where: { id: candidate.id },
@@ -84,7 +167,9 @@ export async function expireUnpaidOrders(
           },
           payment: {
             select: {
-              paymentStatus: true
+              paymentStatus: true,
+              creationStatus: true,
+              transactionId: true
             }
           }
         }
@@ -96,7 +181,12 @@ export async function expireUnpaidOrders(
         order.orderStatus === OrderStatus.CANCELLED ||
         !order.stockReserved ||
         order.createdAt > expiresBefore ||
-        order.payment?.paymentStatus !== PaymentStatus.PENDING
+        order.payment?.paymentStatus !== PaymentStatus.PENDING ||
+        order.payment.transactionId !== null ||
+        !new Set<PaymentCreationStatus>([
+          PaymentCreationStatus.NOT_STARTED,
+          PaymentCreationStatus.FAILED
+        ]).has(order.payment.creationStatus)
       ) {
         return { expired: false, statusMessage: null };
       }
@@ -110,7 +200,14 @@ export async function expireUnpaidOrders(
           createdAt: { lte: expiresBefore },
           payment: {
             is: {
-              paymentStatus: PaymentStatus.PENDING
+              paymentStatus: PaymentStatus.PENDING,
+              transactionId: null,
+              creationStatus: {
+                in: [
+                  PaymentCreationStatus.NOT_STARTED,
+                  PaymentCreationStatus.FAILED
+                ]
+              }
             }
           }
         },

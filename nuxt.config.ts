@@ -82,7 +82,7 @@ export default defineNuxtConfig({
       ]
     }
   },
-  css: ["./app/assets/css/main.css"],
+  css: ["~/assets/css/main.css"],
   components: [
     { path: "~/shared/ui", pathPrefix: false },
     { path: "~/shared/ui/charts", pathPrefix: false },

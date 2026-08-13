@@ -1,22 +1,18 @@
 import { AuditAction, OrderStatus, PaymentStatus } from "@prisma/client";
-import { reserveProductStock, restoreProductStock } from "~~/server/utils/orderStock";
+import { restoreProductStock } from "~~/server/utils/orderStock";
+import { assertAdminPaymentTransition } from "~~/server/utils/orderState";
 import {
   broadcastOrderStatusChangeMessage,
   createOrderStatusChangeMessage
 } from "~~/server/utils/orderStatusNotification";
 import { updatePaymentStatusSchema } from "~~/shared/schemas/admin/orders/updatePaymentStatus";
 
-function getOrderStatusForActivePayment(paymentStatus: PaymentStatus) {
-  return paymentStatus === PaymentStatus.PENDING ? OrderStatus.NEW : OrderStatus.CONFIRMED;
-}
-
 export default defineEventHandler(async (event) => {
   const { userId } = await requireAdmin(event);
-
   const body = await validateBody(event, updatePaymentStatusSchema);
-  const paymentStatus = body.paymentStatus as PaymentStatus;
+  const nextPaymentStatus = body.paymentStatus as PaymentStatus;
 
-  const { updatedPayment, statusMessage } = await prisma.$transaction(async (tx) => {
+  const { statusMessage } = await prisma.$transaction(async (tx) => {
     const payment = await tx.payment.findUnique({
       where: { orderId: body.orderId },
       include: {
@@ -24,6 +20,7 @@ export default defineEventHandler(async (event) => {
           select: {
             id: true,
             userId: true,
+            paymentMethod: true,
             orderStatus: true,
             stockReserved: true,
             orderItems: {
@@ -41,14 +38,54 @@ export default defineEventHandler(async (event) => {
       });
     }
 
+    assertAdminPaymentTransition({
+      paymentMethod: payment.order.paymentMethod,
+      current: payment.paymentStatus,
+      next: nextPaymentStatus
+    });
+
     let nextOrderStatus: OrderStatus | null = null;
 
-    if (paymentStatus === PaymentStatus.CANCELLED) {
-      if (payment.order.orderStatus !== OrderStatus.CANCELLED) {
+    if (nextPaymentStatus === PaymentStatus.CANCELLED) {
+      if (payment.order.stockReserved) {
+        await restoreProductStock(tx, payment.order.orderItems, {
+          orderId: payment.order.id,
+          reason: "Admin payment cancelled"
+        });
+      }
+
+      await tx.order.update({
+        where: { id: payment.order.id },
+        data: {
+          orderStatus: OrderStatus.CANCELLED,
+          stockReserved: false
+        }
+      });
+      nextOrderStatus = OrderStatus.CANCELLED;
+    } else if (
+      nextPaymentStatus === PaymentStatus.PAID &&
+      payment.order.orderStatus === OrderStatus.NEW
+    ) {
+      await tx.order.update({
+        where: { id: payment.order.id },
+        data: { orderStatus: OrderStatus.CONFIRMED }
+      });
+      nextOrderStatus = OrderStatus.CONFIRMED;
+    } else if (nextPaymentStatus === PaymentStatus.REFUNDED) {
+      if (
+        payment.order.orderStatus === OrderStatus.SHIPPED ||
+        payment.order.orderStatus === OrderStatus.COMPLETED
+      ) {
+        await tx.order.update({
+          where: { id: payment.order.id },
+          data: { orderStatus: OrderStatus.PAYMENT_REVIEW }
+        });
+        nextOrderStatus = OrderStatus.PAYMENT_REVIEW;
+      } else {
         if (payment.order.stockReserved) {
           await restoreProductStock(tx, payment.order.orderItems, {
             orderId: payment.order.id,
-            reason: "Admin payment cancelled"
+            reason: "Admin payment refunded"
           });
         }
 
@@ -59,76 +96,38 @@ export default defineEventHandler(async (event) => {
             stockReserved: false
           }
         });
-
         nextOrderStatus = OrderStatus.CANCELLED;
       }
-    } else if (payment.order.orderStatus === OrderStatus.CANCELLED) {
-      if (!payment.order.stockReserved) {
-        await reserveProductStock(tx, payment.order.orderItems, {
-          orderId: payment.order.id,
-          reason: "Admin payment reactivated"
-        });
-      }
-
-      await tx.order.update({
-        where: { id: payment.order.id },
-        data: {
-          orderStatus: getOrderStatusForActivePayment(paymentStatus),
-          stockReserved: true
-        }
-      });
-
-      nextOrderStatus = getOrderStatusForActivePayment(paymentStatus);
-    } else if (!payment.order.stockReserved) {
-      await reserveProductStock(tx, payment.order.orderItems, {
-        orderId: payment.order.id,
-        reason: "Admin payment status update"
-      });
-
-      nextOrderStatus =
-        paymentStatus === PaymentStatus.PAID && payment.order.orderStatus === OrderStatus.NEW
-          ? OrderStatus.CONFIRMED
-          : null;
-
-      await tx.order.update({
-        where: { id: payment.order.id },
-        data: {
-          stockReserved: true,
-          ...(paymentStatus === PaymentStatus.PAID &&
-          payment.order.orderStatus === OrderStatus.NEW
-            ? { orderStatus: OrderStatus.CONFIRMED }
-            : {})
-        }
-      });
-    } else if (
-      paymentStatus === PaymentStatus.PAID &&
-      payment.order.orderStatus === OrderStatus.NEW
-    ) {
-      await tx.order.update({
-        where: { id: payment.order.id },
-        data: {
-          orderStatus: OrderStatus.CONFIRMED,
-          stockReserved: true
-        }
-      });
-
-      nextOrderStatus = OrderStatus.CONFIRMED;
     }
 
     const updatedPayment = await tx.payment.update({
       where: { orderId: body.orderId },
       data: {
-        paymentStatus,
-        paidAt: paymentStatus === PaymentStatus.PAID ? new Date() : null
+        paymentStatus: nextPaymentStatus,
+        paidAt:
+          nextPaymentStatus === PaymentStatus.PAID
+            ? new Date()
+            : nextPaymentStatus === PaymentStatus.CANCELLED
+              ? null
+              : payment.paidAt,
+        refundedAmount:
+          nextPaymentStatus === PaymentStatus.REFUNDED
+            ? payment.amount
+            : payment.refundedAmount,
+        refundedAt:
+          nextPaymentStatus === PaymentStatus.REFUNDED
+            ? new Date()
+            : payment.refundedAt
       },
       select: {
         id: true,
         orderId: true,
-        paymentStatus: true
+        paymentStatus: true,
+        refundedAmount: true
       }
     });
 
-    const statusMessage = nextOrderStatus
+    const statusMessage = nextOrderStatus && nextOrderStatus !== payment.order.orderStatus
       ? await createOrderStatusChangeMessage(tx, {
           orderId: payment.order.id,
           userId: payment.order.userId,
@@ -137,7 +136,36 @@ export default defineEventHandler(async (event) => {
         })
       : null;
 
-    return { updatedPayment, statusMessage };
+    await recordAdminAudit({
+      adminId: userId,
+      action: AuditAction.PAYMENT_STATUS,
+      entityType: "payment",
+      entityId: updatedPayment.id,
+      summary: `Updated payment for order ${updatedPayment.orderId}`,
+      metadata: {
+        orderId: updatedPayment.orderId,
+        previousPaymentStatus: payment.paymentStatus,
+        paymentStatus: updatedPayment.paymentStatus,
+        refundedAmount: updatedPayment.refundedAmount.toString()
+      }
+    }, tx, { suppressErrors: false });
+
+    if (nextOrderStatus && nextOrderStatus !== payment.order.orderStatus) {
+      await recordAdminAudit({
+        adminId: userId,
+        action: AuditAction.ORDER_STATUS,
+        entityType: "order",
+        entityId: payment.order.id,
+        summary: `Payment update changed order ${payment.order.id} status`,
+        metadata: {
+          previousOrderStatus: payment.order.orderStatus,
+          orderStatus: nextOrderStatus,
+          paymentStatus: updatedPayment.paymentStatus
+        }
+      }, tx, { suppressErrors: false });
+    }
+
+    return { statusMessage };
   }).catch((error) => {
     const prismaError = toPrismaHttpError(error, {
       P2025: "Платёж или заказ не найден"
@@ -148,18 +176,6 @@ export default defineEventHandler(async (event) => {
     }
 
     throw error;
-  });
-
-  await recordAdminAudit({
-    adminId: userId,
-    action: AuditAction.PAYMENT_STATUS,
-    entityType: "payment",
-    entityId: updatedPayment.id,
-    summary: `Updated payment for order ${updatedPayment.orderId}`,
-    metadata: {
-      orderId: updatedPayment.orderId,
-      paymentStatus: updatedPayment.paymentStatus
-    }
   });
 
   broadcastOrderStatusChangeMessage(statusMessage);

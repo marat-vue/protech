@@ -9,7 +9,7 @@ export const updatePaymentStatusSchema = z.strictObject({
 
 	paymentStatus: z
 		.enum(
-			["PENDING", "UPON_RECEIPT", "PAID", "CANCELLED"],
+			["PENDING", "UPON_RECEIPT", "PAID", "PARTIALLY_REFUNDED", "REFUNDED", "CANCELLED"],
 			"Статус оплаты необходим"
 		)
 });

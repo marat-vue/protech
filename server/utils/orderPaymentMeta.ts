@@ -17,7 +17,7 @@ type PaymentMetaOrder = Pick<Order, "createdAt" | "orderStatus" | "paymentMethod
 export function isPendingOnlinePayment(order: PaymentMetaOrder) {
   return (
     order.paymentMethod === PaymentMethod.ONLINE &&
-    order.orderStatus !== OrderStatus.CANCELLED &&
+    order.orderStatus === OrderStatus.NEW &&
     order.payment?.paymentStatus === PaymentStatus.PENDING
   );
 }

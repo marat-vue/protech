@@ -1,5 +1,6 @@
 import { AuditAction, OrderStatus, PaymentStatus } from "@prisma/client";
 import { reserveProductStock, restoreProductStock } from "~~/server/utils/orderStock";
+import { assertAdminOrderTransition } from "~~/server/utils/orderState";
 import {
   broadcastOrderStatusChangeMessage,
   createOrderStatusChangeMessage
@@ -12,7 +13,7 @@ export default defineEventHandler(async (event) => {
   const orderId = getPositiveIntRouterParam(event, "orderId", "Некорректный ID заказа");
   const body = await validateBody(event, updateOrderStatusSchema);
 
-  const { order, statusMessage } = await prisma.$transaction(async (tx) => {
+  const { statusMessage } = await prisma.$transaction(async (tx) => {
     const existingOrder = await tx.order.findUnique({
       where: { id: orderId },
       include: {
@@ -33,6 +34,13 @@ export default defineEventHandler(async (event) => {
     }
 
     const nextOrderStatus = body.orderStatus as OrderStatus;
+    assertAdminOrderTransition({
+      current: existingOrder.orderStatus,
+      next: nextOrderStatus,
+      paymentMethod: existingOrder.paymentMethod,
+      paymentStatus: existingOrder.payment?.paymentStatus ?? null
+    });
+
     const orderData: { orderStatus: OrderStatus; stockReserved?: boolean } = {
       orderStatus: nextOrderStatus
     };
@@ -53,7 +61,9 @@ export default defineEventHandler(async (event) => {
       await tx.payment.updateMany({
         where: {
           orderId,
-          paymentStatus: { not: PaymentStatus.PAID }
+          paymentStatus: {
+            in: [PaymentStatus.PENDING, PaymentStatus.UPON_RECEIPT]
+          }
         },
         data: {
           paymentStatus: PaymentStatus.CANCELLED,
@@ -62,30 +72,23 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    if (nextOrderStatus !== OrderStatus.CANCELLED && !existingOrder.stockReserved) {
+    if (
+      existingOrder.orderStatus === OrderStatus.PAYMENT_REVIEW &&
+      new Set<OrderStatus>([OrderStatus.CONFIRMED, OrderStatus.PROCESSING]).has(nextOrderStatus) &&
+      !existingOrder.stockReserved
+    ) {
       await reserveProductStock(tx, existingOrder.orderItems, {
         orderId,
-        reason: "Admin order reactivated"
+        reason: "Admin resolved payment review"
       });
       orderData.stockReserved = true;
     }
 
-    if (
-      existingOrder.orderStatus === OrderStatus.CANCELLED &&
-      nextOrderStatus !== OrderStatus.CANCELLED
-    ) {
-      if (existingOrder.payment?.paymentStatus === PaymentStatus.CANCELLED) {
-        await tx.payment.update({
-          where: { orderId },
-          data: {
-            paymentStatus:
-              existingOrder.paymentMethod === "ONLINE"
-                ? PaymentStatus.PENDING
-                : PaymentStatus.UPON_RECEIPT,
-            paidAt: null
-          }
-        });
-      }
+    if (nextOrderStatus === OrderStatus.COMPLETED) {
+      await tx.delivery.updateMany({
+        where: { orderId },
+        data: { deliveredAt: new Date() }
+      });
     }
 
     const updatedOrder = await tx.order.update({
@@ -106,6 +109,19 @@ export default defineEventHandler(async (event) => {
       nextStatus: updatedOrder.orderStatus
     });
 
+    await recordAdminAudit({
+      adminId: userId,
+      action: AuditAction.ORDER_STATUS,
+      entityType: "order",
+      entityId: updatedOrder.id,
+      summary: `Updated order ${updatedOrder.id} status`,
+      metadata: {
+        previousOrderStatus: existingOrder.orderStatus,
+        orderStatus: updatedOrder.orderStatus,
+        stockReserved: updatedOrder.stockReserved
+      }
+    }, tx, { suppressErrors: false });
+
     return { order: updatedOrder, statusMessage };
   }).catch((error) => {
     const prismaError = toPrismaHttpError(error, {
@@ -117,18 +133,6 @@ export default defineEventHandler(async (event) => {
     }
 
     throw error;
-  });
-
-  await recordAdminAudit({
-    adminId: userId,
-    action: AuditAction.ORDER_STATUS,
-    entityType: "order",
-    entityId: order.id,
-    summary: `Updated order ${order.id} status`,
-    metadata: {
-      orderStatus: order.orderStatus,
-      stockReserved: order.stockReserved
-    }
   });
 
   broadcastOrderStatusChangeMessage(statusMessage);

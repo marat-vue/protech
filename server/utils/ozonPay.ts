@@ -180,7 +180,7 @@ function getOptionalBoolean(value: unknown, name: string) {
   });
 }
 
-function getOzonPayConfig(event: H3Event): OzonPayConfig {
+function getOzonPayConfig(event?: H3Event): OzonPayConfig {
   const config = useRuntimeConfig(event);
   const accessKey = String(config.ozonPayAccessKey || "").trim();
   const secretKey = String(config.ozonPaySecretKey || "").trim();
@@ -463,7 +463,7 @@ export async function buildOzonPayCreateOrderBody(
   };
 }
 
-async function fetchOzonPay(event: H3Event, path: string, body: object) {
+async function fetchOzonPay(event: H3Event | undefined, path: string, body: object) {
   const config = getOzonPayConfig(event);
   const timeoutMs = getPositiveIntegerEnv("OZON_PAY_TIMEOUT_MS", 10_000, {
     min: 1_000,
@@ -538,7 +538,7 @@ export async function createOzonPayOrder(
   return result.order;
 }
 
-export async function getOzonPayOrderStatus(event: H3Event, orderId: string) {
+export async function getOzonPayOrderStatus(event: H3Event | undefined, orderId: string) {
   const config = getOzonPayConfig(event);
   const requestSign = createOzonPayHash([
     orderId,

@@ -139,8 +139,9 @@ export type AttributeFilter = {
 export type ObtainingMethod = "DELIVERY" | "PICKUP";
 export type PaymentMethod = "OFFLINE" | "ONLINE";
 export type DeliveryMethod = "OZON" | "CDEK";
-export type OrderStatus = "NEW" | "CONFIRMED" | "PROCESSING" | "SHIPPED" | "COMPLETED" | "CANCELLED";
-export type PaymentStatus = "PENDING" | "UPON_RECEIPT" | "PAID" | "CANCELLED";
+export type OrderStatus = "NEW" | "CONFIRMED" | "PROCESSING" | "SHIPPED" | "COMPLETED" | "PAYMENT_REVIEW" | "CANCELLED";
+export type PaymentStatus = "PENDING" | "UPON_RECEIPT" | "PAID" | "PARTIALLY_REFUNDED" | "REFUNDED" | "CANCELLED";
+export type PaymentCreationStatus = "NOT_REQUIRED" | "NOT_STARTED" | "CREATING" | "READY" | "UNKNOWN" | "FAILED";
 export type MessageSenderRole = "USER" | "ADMIN" | "SYSTEM";
 
 export type ShopMessage = {
@@ -195,7 +196,10 @@ export type ShopOrder = {
   payment: {
     amount: MoneyLike;
     paymentStatus: PaymentStatus;
+    creationStatus: PaymentCreationStatus;
     paidAt: string | null;
+    refundedAmount: MoneyLike;
+    refundedAt: string | null;
   } | null;
   orderItems: Array<{
     id: number;

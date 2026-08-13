@@ -1,14 +1,14 @@
 import {
+  PaymentCreationStatus,
   PaymentMethod,
   PaymentStatus
 } from "@prisma/client";
 import { syncOnlinePaymentStatus } from "~~/server/utils/onlinePaymentStatus";
 import { expireUnpaidOrders, getOrderPaymentExpiresAt, getOrderPaymentRemainingSeconds } from "~~/server/utils/orderExpiry";
 import {
-  createOzonPayOrder,
-  decodeOzonPayOrderId,
-  encodeOzonPayOrderId
+  decodeOzonPayOrderId
 } from "~~/server/utils/ozonPay";
+import { ensureOzonPayCheckout } from "~~/server/utils/ozonPayCheckout";
 import { createYooKassaPayment } from "~~/server/utils/yookassa";
 
 async function getOrder(orderId: number, userId: string) {
@@ -76,7 +76,17 @@ export default defineEventHandler(async (event) => {
   let remainingSeconds = getOrderPaymentRemainingSeconds(order.createdAt, now);
 
   if (remainingSeconds <= 0) {
-    await expireUnpaidOrders({ now });
+    await expireUnpaidOrders({ now, event });
+
+    const expiredOrder = await getOrder(orderId, userId);
+
+    if (expiredOrder?.orderStatus === "PAYMENT_REVIEW") {
+      throw createError({
+        statusCode: 409,
+        message: "Результат создания платежа проверяется. Мы сохранили заказ и не спишем товары со склада до сверки"
+      });
+    }
+
     throw createError({
       statusCode: 410,
       message: "Время оплаты истекло, заказ отменён"
@@ -99,7 +109,7 @@ export default defineEventHandler(async (event) => {
       remainingSeconds = getOrderPaymentRemainingSeconds(order.createdAt, new Date());
 
       if (remainingSeconds <= 0) {
-        await expireUnpaidOrders({ now: new Date() });
+        await expireUnpaidOrders({ now: new Date(), event });
         throw createError({
           statusCode: 410,
           message: "Время оплаты истекло, заказ отменён"
@@ -131,27 +141,15 @@ export default defineEventHandler(async (event) => {
         },
         data: {
           transactionId: yookassaPayment.id,
-          confirmationUrl
+          confirmationUrl,
+          providerStatus: yookassaPayment.status,
+          creationStatus: PaymentCreationStatus.READY,
+          lastError: null
         }
       });
     } else {
-      const ozonPayOrder = await createOzonPayOrder(event, {
-        orderId: order.id,
-        amount: order.payment.amount,
-        expiresAt: getOrderPaymentExpiresAt(order.createdAt)
-      });
-
-      confirmationUrl = ozonPayOrder.payLink;
-
-      await prisma.payment.update({
-        where: {
-          orderId: order.id
-        },
-        data: {
-          transactionId: encodeOzonPayOrderId(ozonPayOrder.id),
-          confirmationUrl
-        }
-      });
+      const checkout = await ensureOzonPayCheckout(event, order.id);
+      confirmationUrl = checkout.confirmationUrl;
     }
 
     if (!confirmationUrl) {

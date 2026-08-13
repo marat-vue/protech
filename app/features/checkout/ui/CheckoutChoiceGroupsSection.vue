@@ -117,7 +117,10 @@
             </span>
             <span class="min-w-0">
               <span class="flex flex-wrap items-center gap-x-2 gap-y-1">
-                <span class="text-sm font-semibold text-zinc-950">{{ option.title }}</span>
+                <OzonPayLogo v-if="option.brand === 'ozon'"
+                  class="-my-2 h-10 w-auto text-[#005bff]"
+                />
+                <span v-else class="text-sm font-semibold text-zinc-950">{{ option.title }}</span>
                 <span v-if="option.badge"
                   class="rounded-full bg-white px-2 py-0.5 text-[10px] font-semibold text-zinc-500 shadow-sm shadow-zinc-950/5  "
                 >
@@ -138,9 +141,7 @@
         >
           <div class="flex flex-wrap items-center justify-between gap-3">
             <div class="flex items-center gap-3">
-              <span class="inline-flex items-center rounded-xl bg-[#005bff] px-2.5 py-1.5 text-xs font-black tracking-[0.08em] text-white">
-                OZON
-              </span>
+              <OzonPayLogo class="-my-2 h-10 w-auto text-[#005bff]" />
               <div>
                 <p class="text-sm font-semibold text-zinc-950">Оплата на стороне Ozon Pay</p>
                 <p class="mt-0.5 text-xs leading-5 text-zinc-500">Платёжные данные не передаются магазину.</p>

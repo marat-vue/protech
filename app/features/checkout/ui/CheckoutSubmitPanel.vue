@@ -32,28 +32,69 @@
       В сумму входит только товар. Стоимость доставки менеджер рассчитает и согласует отдельно.
     </p>
 
-    <div class="mt-5 rounded-3xl bg-white/8 p-3 ring-1 ring-white/10">
-      <div v-if="appliedPromoCode" class="flex items-center justify-between gap-3">
-        <div class="min-w-0">
-          <p class="text-xs font-semibold uppercase text-emerald-300">Промокод применён</p>
-          <p class="mt-1 truncate font-semibold">{{ appliedPromoCode }} · скидка {{ promoDiscountPercent }}%</p>
+    <div v-if="appliedPromoCode"
+      class="relative mt-5 overflow-hidden rounded-[1.35rem] bg-emerald-400/10 p-4 ring-1 ring-inset ring-emerald-300/20"
+    >
+      <div class="pointer-events-none absolute -right-7 -top-8 size-24 rounded-full bg-emerald-300/10 blur-xl" />
+      <div class="relative flex items-center gap-3">
+        <span class="grid size-11 shrink-0 place-items-center rounded-2xl bg-emerald-300 text-emerald-950 shadow-lg shadow-emerald-950/20">
+          <UIcon name="i-lucide-badge-check" class="size-5" />
+        </span>
+        <div class="min-w-0 flex-1">
+          <p class="text-[11px] font-semibold uppercase tracking-[0.12em] text-emerald-300">Промокод применён</p>
+          <p class="mt-1 flex flex-wrap items-baseline gap-x-2">
+            <span class="truncate text-base font-semibold tracking-wide text-white">{{ appliedPromoCode }}</span>
+            <span class="text-xs font-medium text-emerald-200">Скидка {{ promoDiscountPercent }}%</span>
+          </p>
         </div>
         <UButton color="neutral" variant="ghost" icon="i-lucide-x" square
-          class="shrink-0 rounded-full text-white/70 hover:bg-white/10 hover:text-white"
+          class="shrink-0 rounded-full text-white/60 hover:bg-white/10 hover:text-white"
           aria-label="Удалить промокод" @click="emit('removePromo')" />
       </div>
-      <form v-else class="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]" @submit.prevent="emit('applyPromo')">
-        <UInput :model-value="promoCode" size="lg" variant="none" placeholder="Введите промокод"
-          class="rounded-full bg-white text-zinc-950"
-          :ui="{ base: 'rounded-full uppercase placeholder:normal-case' }"
-          @update:model-value="emit('updatePromoCode', String($event))" />
-        <UButton color="neutral" variant="solid" type="submit" size="lg" :loading="promoLoading"
-          class="justify-center rounded-full bg-white px-5 text-zinc-950 hover:bg-zinc-100">
-          Применить
-        </UButton>
-      </form>
-      <p v-if="promoError" class="mt-2 px-2 text-xs leading-5 text-red-300">{{ promoError }}</p>
     </div>
+
+    <form v-else
+      class="mt-5 rounded-[1.35rem] bg-white/[0.07] p-3 ring-1 ring-inset ring-white/10"
+      @submit.prevent="emit('applyPromo')"
+    >
+      <div class="flex items-center gap-3 px-1 pb-3">
+        <span class="grid size-9 shrink-0 place-items-center rounded-xl bg-amber-300 text-amber-950 shadow-lg shadow-black/15">
+          <UIcon name="i-lucide-ticket-percent" class="size-4.5" />
+        </span>
+        <div class="min-w-0">
+          <label for="checkout-promo-code" class="block text-sm font-semibold text-white">Есть промокод?</label>
+          <p class="mt-0.5 text-xs text-white/45">Введите его, чтобы пересчитать стоимость</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-1.5 rounded-[1.05rem] bg-white p-1.5 shadow-[0_12px_35px_rgba(0,0,0,0.18)] ring-2 transition"
+        :class="promoError ? 'ring-red-400/80' : 'ring-transparent focus-within:ring-amber-300/80'"
+      >
+        <UInput id="checkout-promo-code"
+          :model-value="promoCode"
+          size="lg"
+          variant="none"
+          placeholder="Например, SALE10"
+          autocomplete="off"
+          :aria-invalid="promoError ? 'true' : undefined"
+          class="min-w-0 flex-1 text-zinc-950"
+          :ui="{ base: 'h-11 rounded-xl bg-transparent pl-3 font-semibold uppercase tracking-[0.08em] placeholder:font-normal placeholder:normal-case placeholder:tracking-normal' }"
+          @update:model-value="emit('updatePromoCode', String($event))"
+        />
+        <UButton color="neutral" variant="solid" type="submit" size="lg" :loading="promoLoading"
+          icon="i-lucide-arrow-right"
+          class="min-h-11 shrink-0 justify-center rounded-xl bg-zinc-950 px-4 font-semibold text-white shadow-md shadow-zinc-950/20 hover:bg-zinc-800"
+        >
+          <span class="hidden sm:inline">Применить</span>
+          <span class="sm:hidden">Готово</span>
+        </UButton>
+      </div>
+
+      <p v-if="promoError" class="mt-2 flex items-center gap-1.5 px-1 text-xs leading-5 text-red-300" role="alert">
+        <UIcon name="i-lucide-circle-alert" class="size-3.5 shrink-0" />
+        {{ promoError }}
+      </p>
+    </form>
 
     <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
       <div v-if="previewItems.length"

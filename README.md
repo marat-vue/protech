@@ -13,31 +13,31 @@
 <table>
   <tr>
     <td width="50%" align="center">
-      <img src="./docs/screenshots/01-catalog-home.jpg" alt="Главная страница каталога ПроТех76">
+      <img src="./docs/screenshots/01-catalog-home.png" alt="Главная страница каталога ПроТех76">
       <br><sub><strong>Каталог и промо-рубрики</strong></sub>
     </td>
     <td width="50%" align="center">
-      <img src="./docs/screenshots/02-product-details.jpg" alt="Карточка товара ПроТех76">
+      <img src="./docs/screenshots/02-product-details.png" alt="Карточка товара ПроТех76">
       <br><sub><strong>Карточка товара</strong></sub>
     </td>
   </tr>
   <tr>
     <td width="50%" align="center">
-      <img src="./docs/screenshots/03-cart.jpg" alt="Корзина ПроТех76">
+      <img src="./docs/screenshots/03-cart.png" alt="Корзина ПроТех76">
       <br><sub><strong>Корзина</strong></sub>
     </td>
     <td width="50%" align="center">
-      <img src="./docs/screenshots/04-order.jpg" alt="Страница заказа ПроТех76">
+      <img src="./docs/screenshots/04-order.png" alt="Страница заказа ПроТех76">
       <br><sub><strong>Страница заказа</strong></sub>
     </td>
   </tr>
   <tr>
     <td width="50%" align="center">
-      <img src="./docs/screenshots/05-messages.jpg" alt="Сообщения ПроТех76">
+      <img src="./docs/screenshots/05-messages.png" alt="Сообщения ПроТех76">
       <br><sub><strong>Сообщения</strong></sub>
     </td>
     <td width="50%" align="center">
-      <img src="./docs/screenshots/06-pickup-map.jpg" alt="Карта точки самовывоза ПроТех76">
+      <img src="./docs/screenshots/06-pickup-map.png" alt="Карта точки самовывоза ПроТех76">
       <br><sub><strong>Карта точки самовывоза</strong></sub>
     </td>
   </tr>

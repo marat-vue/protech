@@ -8,6 +8,41 @@
   Production-ready интернет-магазин и операционная панель для каталога запчастей и навесного оборудования Rippa.
 </p>
 
+## Интерфейс
+
+<table>
+  <tr>
+    <td width="50%" align="center">
+      <img src="./docs/screenshots/01-catalog-home.jpg" alt="Главная страница каталога ПроТех76">
+      <br><sub><strong>Каталог и промо-рубрики</strong></sub>
+    </td>
+    <td width="50%" align="center">
+      <img src="./docs/screenshots/02-product-details.jpg" alt="Карточка товара ПроТех76">
+      <br><sub><strong>Карточка товара</strong></sub>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" align="center">
+      <img src="./docs/screenshots/03-about.jpg" alt="Страница о компании ПроТех76">
+      <br><sub><strong>О компании</strong></sub>
+    </td>
+    <td width="50%" align="center">
+      <img src="./docs/screenshots/04-auth.jpg" alt="Вход и регистрация покупателя ПроТех76">
+      <br><sub><strong>Личный кабинет покупателя</strong></sub>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" align="center">
+      <img src="./docs/screenshots/05-admin-login.jpg" alt="Вход в административную панель ПроТех76">
+      <br><sub><strong>Административная панель</strong></sub>
+    </td>
+    <td width="50%" align="center">
+      <img src="./docs/screenshots/06-pickup-map.jpg" alt="Карта точки самовывоза ПроТех76">
+      <br><sub><strong>Карта точки самовывоза</strong></sub>
+    </td>
+  </tr>
+</table>
+
 Проект объединяет публичную SSR-витрину, личный кабинет покупателя, real-time сообщения и административный back office. Заказы создаются идемпотентно, остатки резервируются транзакционно, платежи синхронизируются через подписанные webhook’и, а API использует общие Zod-схемы и повторную серверную авторизацию.
 
 ## Возможности

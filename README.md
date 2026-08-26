@@ -23,18 +23,18 @@
   </tr>
   <tr>
     <td width="50%" align="center">
-      <img src="./docs/screenshots/03-about.jpg" alt="Страница о компании ПроТех76">
-      <br><sub><strong>О компании</strong></sub>
+      <img src="./docs/screenshots/03-cart.jpg" alt="Корзина ПроТех76">
+      <br><sub><strong>Корзина</strong></sub>
     </td>
     <td width="50%" align="center">
-      <img src="./docs/screenshots/04-auth.jpg" alt="Вход и регистрация покупателя ПроТех76">
-      <br><sub><strong>Личный кабинет покупателя</strong></sub>
+      <img src="./docs/screenshots/04-order.jpg" alt="Страница заказа ПроТех76">
+      <br><sub><strong>Страница заказа</strong></sub>
     </td>
   </tr>
   <tr>
     <td width="50%" align="center">
-      <img src="./docs/screenshots/05-admin-login.jpg" alt="Вход в административную панель ПроТех76">
-      <br><sub><strong>Административная панель</strong></sub>
+      <img src="./docs/screenshots/05-messages.jpg" alt="Сообщения ПроТех76">
+      <br><sub><strong>Сообщения</strong></sub>
     </td>
     <td width="50%" align="center">
       <img src="./docs/screenshots/06-pickup-map.jpg" alt="Карта точки самовывоза ПроТех76">
@@ -59,17 +59,17 @@
 
 ## Технологии
 
-| Область | Решение |
-| --- | --- |
-| Full stack | Nuxt 4, Vue 3, TypeScript, Nitro |
-| UI | Nuxt UI, Tailwind CSS 4, Lucide, Auto Animate |
-| Состояние | Pinia + persisted state только для безопасных клиентских черновиков |
-| API и валидация | Nitro handlers, H3, Zod 4 |
-| Данные | PostgreSQL, Prisma 7, `@prisma/adapter-pg` |
-| Авторизация | Better Auth, email OTP, cookie sessions |
-| Интеграции | Ozon Pay, YooKassa legacy, Yandex SMTP, S3, OpenStreetMap |
-| Качество | ESLint, `vue-tsc`, Vitest, GitHub Actions |
-| SEO | `@nuxtjs/seo`, sitemap, robots, Schema.org, OG Image |
+| Область         | Решение                                                             |
+| --------------- | ------------------------------------------------------------------- |
+| Full stack      | Nuxt 4, Vue 3, TypeScript, Nitro                                    |
+| UI              | Nuxt UI, Tailwind CSS 4, Lucide, Auto Animate                       |
+| Состояние       | Pinia + persisted state только для безопасных клиентских черновиков |
+| API и валидация | Nitro handlers, H3, Zod 4                                           |
+| Данные          | PostgreSQL, Prisma 7, `@prisma/adapter-pg`                          |
+| Авторизация     | Better Auth, email OTP, cookie sessions                             |
+| Интеграции      | Ozon Pay, YooKassa legacy, Yandex SMTP, S3, OpenStreetMap           |
+| Качество        | ESLint, `vue-tsc`, Vitest, GitHub Actions                           |
+| SEO             | `@nuxtjs/seo`, sitemap, robots, Schema.org, OG Image                |
 
 ## Архитектура
 
@@ -153,18 +153,18 @@ npm run dev
 
 Полный документированный шаблон находится в [`.env.example`](./.env.example). Основные группы:
 
-| Группа | Переменные | Назначение |
-| --- | --- | --- |
-| Database | `DATABASE_URL` или `DB_*`, `DATABASE_POOL_*` | PostgreSQL и параметры пула |
-| Auth | `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` | подпись сессий и origin авторизации |
-| Public URL / SEO | `NUXT_SITE_URL`, `NUXT_PUBLIC_APP_URL`, `NUXT_OG_IMAGE_SECRET` | canonical URL, callback URL и OG image |
-| Admin seed | `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_NAME` | создание первого администратора |
-| Ozon Pay | `OZON_PAY_*` | Checkout, webhook signature, VAT и timeout |
-| YooKassa legacy | `YOOKASSA_*` | синхронизация ранее созданных платежей |
-| Email | `YANDEX_SMTP_*` | OTP и verification email |
-| Object storage | `AWS_*`, `S3_*` | загрузка и удаление изображений |
-| Protection | `RATE_LIMIT_*` | лимиты auth/upload/cart/order/callback |
-| Order expiry | `ORDER_EXPIRY_*` | TTL неоплаченного заказа и фоновый job |
+| Группа           | Переменные                                                     | Назначение                                 |
+| ---------------- | -------------------------------------------------------------- | ------------------------------------------ |
+| Database         | `DATABASE_URL` или `DB_*`, `DATABASE_POOL_*`                   | PostgreSQL и параметры пула                |
+| Auth             | `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`                        | подпись сессий и origin авторизации        |
+| Public URL / SEO | `NUXT_SITE_URL`, `NUXT_PUBLIC_APP_URL`, `NUXT_OG_IMAGE_SECRET` | canonical URL, callback URL и OG image     |
+| Admin seed       | `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_NAME`                  | создание первого администратора            |
+| Ozon Pay         | `OZON_PAY_*`                                                   | Checkout, webhook signature, VAT и timeout |
+| YooKassa legacy  | `YOOKASSA_*`                                                   | синхронизация ранее созданных платежей     |
+| Email            | `YANDEX_SMTP_*`                                                | OTP и verification email                   |
+| Object storage   | `AWS_*`, `S3_*`                                                | загрузка и удаление изображений            |
+| Protection       | `RATE_LIMIT_*`                                                 | лимиты auth/upload/cart/order/callback     |
+| Order expiry     | `ORDER_EXPIRY_*`                                               | TTL неоплаченного заказа и фоновый job     |
 
 Для production сгенерируйте независимые длинные секреты, например:
 
@@ -176,19 +176,19 @@ openssl rand -base64 48
 
 ## Команды
 
-| Команда | Что делает |
-| --- | --- |
-| `npm run dev` | запускает Nuxt dev server |
-| `npm run build` | собирает production Nitro server |
-| `npm run start` | запускает `.output/server/index.mjs` |
-| `npm run typecheck` | проверяет типы Nuxt/Vue/TypeScript |
-| `npm run lint` | генерирует Nuxt types и запускает ESLint |
-| `npm test` | запускает весь набор Vitest один раз |
-| `npm run test:watch` | запускает Vitest в watch-режиме |
-| `npm run check` | Prisma validate/generate + typecheck + lint |
-| `npm run check:ci` | полный gate: check + tests + production build |
-| `npm run prisma:migrate:deploy` | применяет только существующие миграции |
-| `npm run seed:admin` | создаёт или обновляет настроенного администратора |
+| Команда                         | Что делает                                        |
+| ------------------------------- | ------------------------------------------------- |
+| `npm run dev`                   | запускает Nuxt dev server                         |
+| `npm run build`                 | собирает production Nitro server                  |
+| `npm run start`                 | запускает `.output/server/index.mjs`              |
+| `npm run typecheck`             | проверяет типы Nuxt/Vue/TypeScript                |
+| `npm run lint`                  | генерирует Nuxt types и запускает ESLint          |
+| `npm test`                      | запускает весь набор Vitest один раз              |
+| `npm run test:watch`            | запускает Vitest в watch-режиме                   |
+| `npm run check`                 | Prisma validate/generate + typecheck + lint       |
+| `npm run check:ci`              | полный gate: check + tests + production build     |
+| `npm run prisma:migrate:deploy` | применяет только существующие миграции            |
+| `npm run seed:admin`            | создаёт или обновляет настроенного администратора |
 
 Перед pull request и деплоем достаточно выполнить:
 
@@ -238,10 +238,10 @@ npm run prisma:migrate:deploy
 
 ## Наблюдаемость и health checks
 
-| Endpoint | Назначение | Ожидаемый ответ |
-| --- | --- | --- |
-| `GET /api/health` | liveness процесса | `200`, `status: ok` |
-| `GET /api/health/ready` | readiness приложения и PostgreSQL | `200` или `503` |
+| Endpoint                | Назначение                        | Ожидаемый ответ     |
+| ----------------------- | --------------------------------- | ------------------- |
+| `GET /api/health`       | liveness процесса                 | `200`, `status: ok` |
+| `GET /api/health/ready` | readiness приложения и PostgreSQL | `200` или `503`     |
 
 Логи не должны содержать cookie, authorization headers, OTP, email целиком или body платёжного провайдера. Для production рекомендуется подключить централизованный structured logger, error tracking и метрики p95 latency, 5xx, payment failures, pool saturation и длительности фонового job.
 

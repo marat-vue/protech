@@ -2,12 +2,13 @@ import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "./prisma";
 import { bearer, emailOTP } from "better-auth/plugins";
+import { siteConfig } from "../../shared/config/site";
 import { sendEmailVerificationCode } from "./authEmail";
 
 const isProduction = process.env.NODE_ENV === "production";
 
 export const auth = betterAuth({
-  appName: "ПроТех76",
+  appName: siteConfig.name,
   baseURL: process.env.BETTER_AUTH_URL,
   basePath: "/api/auth",
   database: prismaAdapter(prisma, {

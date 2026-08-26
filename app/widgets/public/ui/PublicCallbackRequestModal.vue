@@ -84,8 +84,8 @@
 
         <p class="text-center text-xs leading-5 text-zinc-400">
           Или позвоните нам:
-          <a class="font-semibold text-zinc-700 hover:text-(--shop-accent-strong)" href="tel:+79201309744">
-            +7 920 130-97-44
+          <a class="font-semibold text-zinc-700 hover:text-(--shop-accent-strong)" :href="siteConfig.contact.primaryPhone.href">
+            {{ siteConfig.contact.primaryPhone.label }}
           </a>
         </p>
       </form>
@@ -99,6 +99,7 @@ import { getErrorMessage } from "~~/app/shared/lib/shopFormatters";
 import { shopFetch } from "~~/app/shared/lib/shopFetch";
 import { clearFieldErrors, getZodFieldErrors, replaceFieldErrors } from "~~/app/shared/lib/zodValidation";
 import { useAuthStore } from "~~/app/stores/auth";
+import { siteConfig } from "~~/shared/config/site";
 import { createCallbackRequestSchema } from "~~/shared/schemas/callbackRequests/createCallbackRequest";
 
 const open = defineModel<boolean>("open", { required: true });

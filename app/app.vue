@@ -11,8 +11,10 @@
 </template>
 
 <script setup lang="ts">
-const siteName = "ПроТех76";
-const siteDescription = "Интернет-магазин запчастей, навесного оборудования и комплектующих для мини-экскаваторов Rippa.";
+import { siteConfig } from "~~/shared/config/site";
+
+const siteName = siteConfig.name;
+const siteDescription = siteConfig.description;
 
 useHead({
   titleTemplate: (title) => title && title !== siteName ? `${title} · ${siteName}` : siteName,

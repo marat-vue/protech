@@ -85,6 +85,8 @@
 </template>
 
 <script setup lang="ts">
+import { siteConfig } from "~~/shared/config/site";
+
 const footerGroups = [
   {
     title: "Покупателю",
@@ -106,8 +108,8 @@ const footerGroups = [
     title: "О компании",
     links: [
       { icon: "i-lucide-building-2", label: "О компании", to: "/about" },
-      { icon: "i-lucide-phone", label: "+79201089344", to: "tel:+79201089344" },
-      { icon: "i-lucide-phone", label: "+79201309744", to: "tel:+79201309744" }
+      { icon: "i-lucide-phone", label: siteConfig.contact.secondaryPhone.label, to: siteConfig.contact.secondaryPhone.href },
+      { icon: "i-lucide-phone", label: siteConfig.contact.primaryPhone.label, to: siteConfig.contact.primaryPhone.href }
     ]
   }
 ];

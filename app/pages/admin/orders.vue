@@ -197,7 +197,7 @@
                 </template>
                 <template v-else>
                   <p class="mt-2 text-sm font-semibold leading-6 text-zinc-950">
-                    Ярославль, пр.-т Октября, д. 78д
+                    {{ pickupAddress }}
                   </p>
                 </template>
               </section>
@@ -302,10 +302,10 @@
 
                     <template v-else>
                       <p class="mt-1 text-sm font-semibold leading-6 text-zinc-950">
-                        Ярославль, пр.-т Октября, д. 78д
+                        {{ pickupAddress }}
                       </p>
                       <p class="mt-1 text-xs leading-5 text-zinc-500">
-                        По предварительной записи: 89201309744
+                        По предварительной записи: {{ siteConfig.contact.primaryPhone.label }}
                       </p>
                     </template>
                   </div>
@@ -402,6 +402,7 @@ import {
 } from "~~/app/shared/lib/adminFormatters";
 import { adminFetch } from "~~/app/shared/lib/adminFetch";
 import { useAdminFiltersStore } from "~~/app/stores/adminFilters";
+import { pickupAddress, siteConfig } from "~~/shared/config/site";
 import type {
   OrderListItem,
   OrderStatus,

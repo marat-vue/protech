@@ -55,10 +55,10 @@
 
           <div class="ml-auto flex shrink-0 items-center gap-1 sm:gap-1.5">
             <a
-              href="tel:+79201309744"
+              :href="siteConfig.contact.primaryPhone.href"
               class="hidden rounded-full px-3 py-2 text-right transition hover:bg-[#f9fafb] 2xl:block"
             >
-              <span class="block text-sm font-semibold text-zinc-950">+7 920 130-97-44</span>
+              <span class="block text-sm font-semibold text-zinc-950">{{ siteConfig.contact.primaryPhone.label }}</span>
               <span class="block text-[11px] text-zinc-500">Ежедневно, 9:00–18:00</span>
             </a>
 
@@ -346,6 +346,7 @@ import { useCartStore } from "~~/app/stores/cart";
 import { useFavoritesStore } from "~~/app/stores/favorites";
 import { useMessageNotificationsStore } from "~~/app/stores/messageNotifications";
 import { useShopUiStore } from "~~/app/stores/shopUi";
+import { siteConfig } from "~~/shared/config/site";
 
 type NavItem = {
   count?: number;

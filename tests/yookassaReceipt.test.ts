@@ -170,4 +170,32 @@ describe("YooKassa receipt", () => {
       }
     });
   });
+
+  it("does not expose provider response bodies to API clients", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(
+      JSON.stringify({ diagnostic: "provider-secret" }),
+      { status: 400 }
+    )));
+
+    let caught: unknown;
+
+    try {
+      await createYooKassaPayment({} as never, {
+        orderId: 42,
+        amount: new Prisma.Decimal("341.00"),
+        description: "Заказ №42"
+      });
+    } catch (error) {
+      caught = error;
+    }
+
+    expect(caught).toMatchObject({
+      statusCode: 502,
+      data: {
+        provider: "yookassa",
+        status: 400
+      }
+    });
+    expect(JSON.stringify(caught)).not.toContain("provider-secret");
+  });
 });

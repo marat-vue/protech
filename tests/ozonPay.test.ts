@@ -181,6 +181,34 @@ describe("Ozon Pay Checkout", () => {
     expect(order.payLink).toBe("https://pay.ozon.ru/checkout/test-order");
   });
 
+  it("does not expose provider response bodies to API clients", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(
+      JSON.stringify({ diagnostic: "provider-secret" }),
+      { status: 400 }
+    )));
+
+    let caught: unknown;
+
+    try {
+      await createOzonPayOrder({} as never, {
+        orderId: 42,
+        amount: new Prisma.Decimal("341.00"),
+        expiresAt: new Date("2026-08-12T18:30:00.000Z")
+      });
+    } catch (error) {
+      caught = error;
+    }
+
+    expect(caught).toMatchObject({
+      statusCode: 502,
+      data: {
+        provider: "ozon",
+        status: 400
+      }
+    });
+    expect(JSON.stringify(caught)).not.toContain("provider-secret");
+  });
+
   it("matches and verifies the documented webhook signature", () => {
     const input = {
       orderID: "69f37767-8a8b-4de1-a601-384387aea8c4",

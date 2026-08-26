@@ -135,13 +135,16 @@
       <div class="rounded-[1.25rem] bg-[#f9fafb] p-4 shadow-inner shadow-zinc-950/5">
         <p class="text-xs font-semibold uppercase text-zinc-400">Адрес самовывоза</p>
         <p class="mt-1 text-base font-semibold leading-6 text-zinc-950">
-          Ярославль, пр.-т Октября, д. 78д
+          {{ pickupAddress }}
         </p>
       </div>
     </div>
 
     <p class="mt-3 rounded-[1.25rem] bg-emerald-50 px-4 py-3 text-sm leading-6 text-emerald-800">
-      Самовывоз производится по предварительной записи по номеру: 89201309744.
+      Самовывоз производится по предварительной записи по номеру:
+      <a class="font-semibold underline decoration-emerald-300 underline-offset-2" :href="siteConfig.contact.primaryPhone.href">
+        {{ siteConfig.contact.primaryPhone.label }}
+      </a>.
     </p>
   </section>
 </template>
@@ -149,6 +152,7 @@
 <script setup lang="ts">
 import type { CheckoutDraft } from "~~/app/stores/cart";
 import type { DeliveryMethod } from "~~/app/shared/types/shop";
+import { pickupAddress, siteConfig } from "~~/shared/config/site";
 
 type CheckoutDraftField = keyof Pick<
   CheckoutDraft,

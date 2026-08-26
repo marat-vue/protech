@@ -53,6 +53,7 @@
 import { getDeliveryMethodLabel } from "~~/app/entities/order/lib/orderDisplay";
 import { formatCurrency, formatDateTime } from "~~/app/shared/lib/shopFormatters";
 import type { ShopOrder } from "~~/app/shared/types/shop";
+import { pickupAddress, siteConfig } from "~~/shared/config/site";
 
 const props = defineProps<{
   order: ShopOrder;
@@ -79,11 +80,11 @@ const rows = computed(() => [
     ? [
       {
         label: "Адрес самовывоза",
-        value: "Ярославль, пр.-т Октября, д. 78д"
+        value: pickupAddress
       },
       {
         label: "Запись",
-        value: "89201309744"
+        value: siteConfig.contact.primaryPhone.label
       }
     ]
     : []),

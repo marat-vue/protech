@@ -1,7 +1,13 @@
 {
   "name": "protech",
+  "description": "Production-ready Nuxt storefront and operations panel for ПроТех76.",
   "type": "module",
   "private": true,
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=22.12.0 <25",
+    "npm": ">=10"
+  },
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev",
@@ -14,8 +20,11 @@
     "prisma:migrate:deploy": "prisma migrate deploy --schema ./server/prisma",
     "seed:admin": "tsx server/prisma/seed-admin.ts",
     "db:deploy": "npm run prisma:migrate:deploy && npm run seed:admin",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "test:integration": "vitest run",
     "check": "npm run prisma:validate && npm run prisma:generate && npm run typecheck && npm run lint",
+    "check:ci": "npm run check && npm run test && npm run build",
     "preview": "nuxt preview",
     "postinstall": "npm run prisma:generate && nuxt prepare"
   },

@@ -31,6 +31,7 @@ import {
 } from "~~/app/entities/order/lib/orderDisplay";
 import { formatCurrency, formatDateTime } from "~~/app/shared/lib/shopFormatters";
 import type { OrderStatus, OrderStatusHistoryItem, ShopOrder } from "~~/app/shared/types/shop";
+import { pickupAddress, siteConfig } from "~~/shared/config/site";
 
 type TrackingState = "done" | "current" | "todo" | "cancelled";
 
@@ -311,10 +312,10 @@ const receivingRows = computed<InfoRow[]>(() => {
       value: getPickupHint(order.value.orderStatus)
     }, {
       label: "Адрес",
-      value: "Ярославль, пр.-т Октября, д. 78д"
+      value: pickupAddress
     }, {
       label: "Запись",
-      value: "89201309744"
+      value: siteConfig.contact.primaryPhone.label
     });
 
     return rows;

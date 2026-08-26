@@ -66,6 +66,7 @@ import { shopFetch } from "~~/app/shared/lib/shopFetch";
 import type { DeliveryMethod, ObtainingMethod, PaymentMethod } from "~~/app/shared/types/shop";
 import { useAuthStore } from "~~/app/stores/auth";
 import { useCartStore, type CheckoutDraft } from "~~/app/stores/cart";
+import { pickupAddress } from "~~/shared/config/site";
 
 type CreateOrderResponse = {
   order: {
@@ -123,7 +124,7 @@ const obtainingOptions: Array<CheckoutChoice<ObtainingMethod>> = [
   {
     value: "PICKUP",
     title: "Самовывоз",
-    description: "Ярославль, пр.-т Октября, д. 78д. По предварительной записи.",
+    description: `${pickupAddress}. По предварительной записи.`,
     icon: "i-lucide-store"
   }
 ];

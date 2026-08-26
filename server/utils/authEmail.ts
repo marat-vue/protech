@@ -1,3 +1,5 @@
+import { siteConfig } from "../../shared/config/site";
+import { maskEmailForLogs, toSafeErrorLog } from "./safeLog";
 import { sendYandexMail } from "./yandexMail";
 
 type VerificationEmailInput = {
@@ -36,7 +38,7 @@ export async function sendEmailVerificationCode({
   otp,
   type = "email-verification"
 }: VerificationCodeEmailInput): Promise<void> {
-  const brandName = "ПроТех76";
+  const brandName = siteConfig.name;
   const currentYear = new Date().getFullYear();
   const safeEmail = escapeHtml(email);
   const safeOtp = escapeHtml(otp);
@@ -202,8 +204,8 @@ export async function sendEmailVerificationCode({
     });
   } catch (error) {
     console.error("Failed to send verification code email", {
-      email,
-      error
+      email: maskEmailForLogs(email),
+      error: toSafeErrorLog(error)
     });
 
     throw error;
@@ -214,7 +216,7 @@ export async function sendEmailVerification({
   url,
   user
 }: VerificationEmailInput): Promise<void> {
-  const brandName = "ПроТех76";
+  const brandName = siteConfig.name;
   const displayName = user.name?.trim() || user.email;
   const verificationUrl = normalizeEmailUrl(url);
 
@@ -657,8 +659,8 @@ export async function sendEmailVerification({
     });
   } catch (error) {
     console.error("Failed to send verification email", {
-      email: user.email,
-      error
+      email: maskEmailForLogs(user.email),
+      error: toSafeErrorLog(error)
     });
 
     throw error;

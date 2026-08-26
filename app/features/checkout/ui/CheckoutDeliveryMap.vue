@@ -59,6 +59,7 @@
 <script setup lang="ts">
 import { useDebounceFn } from "@vueuse/core";
 import type { DeliveryMethod, ObtainingMethod } from "~~/app/shared/types/shop";
+import { pickupAddress, siteConfig } from "~~/shared/config/site";
 
 const props = defineProps<{
   city: string;
@@ -82,9 +83,9 @@ const deliveryFallbackPosition = {
   label: "Москва"
 };
 const pickupPosition = {
-  lat: 57.649298, 
-  lon: 39.860342,
-  label: "Ярославль, пр.-т Октября, д. 78Б"
+  lat: siteConfig.pickup.latitude,
+  lon: siteConfig.pickup.longitude,
+  label: pickupAddress
 };
 const position = ref({
   ...deliveryFallbackPosition
@@ -97,7 +98,7 @@ const addressQuery = computed(() => [props.city, props.street, props.house]
   .join(", "));
 
 const statusText = computed(() => {
-  if (isPickup.value) return "По предварительной записи 89201309744";
+  if (isPickup.value) return `По предварительной записи ${siteConfig.contact.primaryPhone.label}`;
   if (!props.city.trim()) return "Введите город, затем улицу и дом";
   if (!props.street.trim()) return "Город найден, добавьте улицу";
   if (!props.house.trim()) return "Улица найдена, добавьте номер дома";

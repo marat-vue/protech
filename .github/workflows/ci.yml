@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Quality gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/protech_ci
+      BETTER_AUTH_SECRET: ci-only-better-auth-secret-not-used-in-production
+      BETTER_AUTH_URL: https://example.com
+      NUXT_SITE_URL: https://example.com
+      NUXT_PUBLIC_APP_URL: https://example.com
+      NUXT_OG_IMAGE_SECRET: ci-only-og-image-secret-not-used-in-production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate, test and build
+        run: npm run check:ci

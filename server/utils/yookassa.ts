@@ -3,6 +3,7 @@ import { createError, type H3Event } from "h3";
 import { Prisma } from "@prisma/client";
 import { getPositiveIntegerEnv } from "./env";
 import { prisma } from "./prisma";
+import { toSafeErrorLog } from "./safeLog";
 
 export type YooKassaPayment = {
   id: string;
@@ -258,42 +259,19 @@ async function fetchYooKassa(
       signal: AbortSignal.timeout(timeoutMs)
     });
 
-    const rawBody = await response.clone().text();
-
-    let body: unknown = rawBody;
-
-    if (rawBody) {
-      try {
-        body = JSON.parse(rawBody);
-      } catch {
-        // Если ЮKassa вернула не JSON, выводим обычный текст.
-      }
-    } else {
-      body = null;
-    }
-
-    const responseLog = {
-      method,
-      url,
-      ok: response.ok,
-      status: response.status,
-      statusText: response.statusText,
-      headers: Object.fromEntries(response.headers.entries()),
-      body
-    };
-
-    if (response.ok) {
-      console.info("[YooKassa] Ответ получен:", responseLog);
-    } else {
-      console.error("[YooKassa] Ошибка ответа:", responseLog);
+    if (!response.ok) {
+      console.error("[YooKassa] Ошибка ответа", {
+        method,
+        status: response.status,
+        statusText: response.statusText
+      });
     }
 
     return response;
   } catch (error) {
-    console.error("[YooKassa] Ошибка запроса:", {
+    console.error("[YooKassa] Ошибка запроса", {
       method,
-      url,
-      error
+      error: toSafeErrorLog(error)
     });
 
     if (
@@ -404,8 +382,8 @@ export async function createYooKassaPayment(
       statusCode: 502,
       message: "ЮKassa не создала платеж",
       data: {
-        status: response.status,
-        body: await response.text()
+        provider: "yookassa",
+        status: response.status
       }
     });
   }
@@ -426,8 +404,8 @@ export async function getYooKassaPayment(event: H3Event | undefined, paymentId: 
       statusCode: 502,
       message: "Не удалось проверить платеж в ЮKassa",
       data: {
-        status: response.status,
-        body: await response.text()
+        provider: "yookassa",
+        status: response.status
       }
     });
   }

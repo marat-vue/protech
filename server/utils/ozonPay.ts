@@ -482,8 +482,6 @@ async function fetchOzonPay(event: H3Event | undefined, path: string, body: obje
     });
 
     if (!response.ok) {
-      const responseBody = await response.text();
-
       console.error("[Ozon Pay] Ошибка ответа", {
         path,
         status: response.status,
@@ -494,8 +492,8 @@ async function fetchOzonPay(event: H3Event | undefined, path: string, body: obje
         statusCode: 502,
         message: "Ozon Pay не выполнил запрос",
         data: {
-          status: response.status,
-          body: responseBody
+          provider: "ozon",
+          status: response.status
         }
       });
     }

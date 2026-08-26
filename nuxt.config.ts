@@ -1,31 +1,17 @@
 import { defineNuxtConfig } from "nuxt/config";
 import process from "process";
+import { siteConfig } from "./shared/config/site";
+import { createSecurityHeaders } from "./shared/config/security";
 
 const configuredSiteUrl = process.env.NUXT_SITE_URL ?? process.env.NUXT_PUBLIC_SITE_URL ?? process.env.NUXT_PUBLIC_APP_URL;
 const siteUrl = configuredSiteUrl && !/localhost|127\.0\.0\.1/.test(configuredSiteUrl)
   ? configuredSiteUrl.replace(/\/$/, "")
   : undefined;
-const siteName = "ПроТех76";
-const siteDescription = "Интернет-магазин запчастей, навесного оборудования и комплектующих для мини-экскаваторов Rippa.";
+const isProduction = process.env.NODE_ENV === "production";
+const siteName = siteConfig.name;
+const siteDescription = siteConfig.description;
 const privateRobotsHeader = "noindex, nofollow, noarchive";
-
-const securityHeaders = {
-  "content-security-policy": [
-    "base-uri 'self'",
-    "object-src 'none'",
-    "frame-ancestors 'self'",
-    "form-action 'self'",
-    "upgrade-insecure-requests"
-  ].join("; "),
-  "cross-origin-opener-policy": "same-origin",
-  "x-dns-prefetch-control": "on",
-  "permissions-policy": "camera=(), microphone=(), geolocation=(), payment=()",
-  "referrer-policy": "strict-origin-when-cross-origin",
-  "strict-transport-security": "max-age=31536000; includeSubDomains",
-  "x-content-type-options": "nosniff",
-  "x-download-options": "noopen",
-  "x-frame-options": "SAMEORIGIN"
-};
+const securityHeaders = createSecurityHeaders(isProduction);
 
 const privateRouteRule = {
   ssr: false,
@@ -211,11 +197,11 @@ export default defineNuxtConfig({
       name: siteName,
       description: siteDescription,
       logo: "/logo.png",
-      telephone: "+79201309744",
+      telephone: siteConfig.contact.primaryPhone.href.replace("tel:", ""),
       address: {
-        streetAddress: "пр.-т Октября, д. 78д",
-        addressLocality: "Ярославль",
-        addressCountry: "RU"
+        streetAddress: siteConfig.pickup.streetAddress,
+        addressLocality: siteConfig.pickup.city,
+        addressCountry: siteConfig.pickup.countryCode
       }
     }
   },

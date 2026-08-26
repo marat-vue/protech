@@ -5,9 +5,10 @@ export default defineEventHandler(async (event) => {
         id: true,
         name: true
       },
-      orderBy: {
-        name: "asc"
-      }
+      orderBy: [
+        { sortOrder: "asc" },
+        { id: "asc" }
+      ]
     });
 
     return categories;

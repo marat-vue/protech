@@ -1,9 +1,11 @@
 model Category {
-    id   Int    @id @default(autoincrement())
-    name String @unique
+    id        Int    @id @default(autoincrement())
+    name      String @unique
+    sortOrder Int    @default(0) @map("sort_order")
 
     products Product[]
 
+    @@index([sortOrder, id])
     @@map("category")
 }
 

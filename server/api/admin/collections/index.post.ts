@@ -15,12 +15,16 @@ export default defineEventHandler(async (event) => {
         image: body.image,
         isActive: body.isActive,
         sortOrder: body.sortOrder,
-        productCollectionItems: {
-          create: body.productIds.map((productId, index) => ({
-            productId,
-            sortOrder: index
-          }))
-        }
+        ...(body.productIds.length > 0
+          ? {
+            productCollectionItems: {
+              create: body.productIds.map((productId, index) => ({
+                productId,
+                sortOrder: index
+              }))
+            }
+          }
+          : {})
       },
       select: {
         id: true,
@@ -57,6 +61,10 @@ export default defineEventHandler(async (event) => {
 });
 
 async function assertProductsExist(productIds: number[]) {
+  if (productIds.length === 0) {
+    return;
+  }
+
   const count = await prisma.product.count({
     where: {
       id: {

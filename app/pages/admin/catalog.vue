@@ -23,7 +23,7 @@
                 Категории
               </p>
               <p class="admin-section-copy">
-                Основная группировка товаров.
+                Основная группировка товаров. Порядок списка совпадает с сайтом.
               </p>
             </div>
             <UButton color="primary" icon="i-lucide-plus" size="lg"
@@ -35,17 +35,40 @@
         </template>
 
         <div v-if="categories.length" class="space-y-3 bg-[#f9fafb] p-3 sm:p-4">
-          <div v-for="category in categories" :key="category.id"
+          <div v-for="(category, index) in categories" :key="category.id"
             class="flex items-center justify-between gap-4 rounded-[1.5rem] bg-white p-4 shadow-[0_18px_50px_rgba(24,24,27,0.08)] ring-1 ring-zinc-200/80 transition hover:-translate-y-0.5 hover:shadow-[0_24px_70px_rgba(24,24,27,0.12)]">
-            <div class="min-w-0">
-              <p class="truncate font-medium text-(--admin-text)">
-                {{ category.name }}
-              </p>
-              <p class="text-xs text-(--admin-text-muted)">
-                ID {{ category.id }}
-              </p>
+            <div class="flex min-w-0 items-center gap-3">
+              <span class="grid size-9 shrink-0 place-items-center rounded-xl bg-[#f9fafb] text-sm font-semibold text-zinc-500">
+                {{ index + 1 }}
+              </span>
+              <div class="min-w-0">
+                <p class="truncate font-medium text-(--admin-text)">
+                  {{ category.name }}
+                </p>
+                <p class="text-xs text-(--admin-text-muted)">
+                  ID {{ category.id }}
+                </p>
+              </div>
             </div>
-            <div class="flex gap-3">
+            <div class="flex gap-1 sm:gap-2">
+              <UTooltip text="Поднять выше">
+                <UButton color="neutral" variant="ghost" square
+                  class="admin-touch-icon rounded-full bg-[#f9fafb] text-zinc-500 hover:bg-zinc-100 hover:text-zinc-950"
+                  aria-label="Поднять категорию выше" :disabled="index === 0 || reorderingCategories"
+                  :loading="movingCategoryId === category.id && movingCategoryDirection === -1"
+                  @click="moveCategory(category.id, -1)">
+                  <ChevronUp class="size-4" />
+                </UButton>
+              </UTooltip>
+              <UTooltip text="Опустить ниже">
+                <UButton color="neutral" variant="ghost" square
+                  class="admin-touch-icon rounded-full bg-[#f9fafb] text-zinc-500 hover:bg-zinc-100 hover:text-zinc-950"
+                  aria-label="Опустить категорию ниже" :disabled="index === categories.length - 1 || reorderingCategories"
+                  :loading="movingCategoryId === category.id && movingCategoryDirection === 1"
+                  @click="moveCategory(category.id, 1)">
+                  <ChevronDown class="size-4" />
+                </UButton>
+              </UTooltip>
               <UTooltip text="Редактировать">
                 <UButton color="neutral" variant="ghost" square
                   class="admin-touch-icon rounded-full bg-[#f9fafb] text-zinc-500 hover:bg-zinc-100 hover:text-zinc-950"
@@ -190,7 +213,7 @@
 </template>
 
 <script setup lang="ts">
-import { FolderTree, ListChecks, Pencil, Trash2 } from "@lucide/vue";
+import { ChevronDown, ChevronUp, FolderTree, ListChecks, Pencil, Trash2 } from "@lucide/vue";
 import { toast } from "vue-sonner";
 import { adminFetch } from "~~/app/shared/lib/adminFetch";
 import { getErrorMessage } from "~~/app/shared/lib/adminFormatters";
@@ -208,6 +231,9 @@ definePageMeta({
 const categoryModalOpen = ref(false);
 const attributeModalOpen = ref(false);
 const savingCategory = ref(false);
+const reorderingCategories = ref(false);
+const movingCategoryId = ref<number | null>(null);
+const movingCategoryDirection = ref<-1 | 1 | null>(null);
 const savingAttribute = ref(false);
 const deletingCategoryId = ref<number | null>(null);
 const deletingAttributeId = ref<number | null>(null);
@@ -239,6 +265,46 @@ const { data, pending, error, refresh } = await useAsyncData("admin-catalog-dict
 
 const categories = computed(() => data.value?.categories ?? []);
 const attributes = computed(() => data.value?.attributes ?? []);
+
+async function moveCategory(categoryId: number, direction: -1 | 1) {
+  if (reorderingCategories.value) {
+    return;
+  }
+
+  const currentIndex = categories.value.findIndex((category) => category.id === categoryId);
+  const targetIndex = currentIndex + direction;
+
+  if (currentIndex < 0 || targetIndex < 0 || targetIndex >= categories.value.length) {
+    return;
+  }
+
+  const reorderedCategories = [...categories.value];
+  [reorderedCategories[currentIndex], reorderedCategories[targetIndex]] = [
+    reorderedCategories[targetIndex]!,
+    reorderedCategories[currentIndex]!
+  ];
+
+  reorderingCategories.value = true;
+  movingCategoryId.value = categoryId;
+  movingCategoryDirection.value = direction;
+
+  try {
+    await adminFetch("/api/admin/categories/reorder", {
+      method: "POST",
+      body: {
+        categoryIds: reorderedCategories.map((category) => category.id)
+      }
+    });
+    await refresh();
+    clearNuxtData("shop-categories");
+  } catch (error) {
+    toast.error(getErrorMessage(error, "Не удалось изменить порядок категорий"));
+  } finally {
+    reorderingCategories.value = false;
+    movingCategoryId.value = null;
+    movingCategoryDirection.value = null;
+  }
+}
 
 function openCategoryForm(category?: Category) {
   editingCategory.value = category ?? null;
@@ -292,6 +358,7 @@ async function saveCategory() {
 
     categoryModalOpen.value = false;
     await refresh();
+    clearNuxtData("shop-categories");
   } catch (error) {
     toast.error(getErrorMessage(error, "Не удалось сохранить категорию"));
   } finally {
@@ -355,6 +422,7 @@ function deleteCategory(category: Category) {
       });
       toast.success("Категория удалена");
       await refresh();
+      clearNuxtData("shop-categories");
     } catch (error) {
       toast.error(getErrorMessage(error, "Не удалось удалить категорию"));
     } finally {

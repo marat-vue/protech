@@ -232,7 +232,7 @@
               <div>
                 <h3 class="text-lg font-semibold text-zinc-950">Товары рубрики</h3>
                 <p class="mt-1 text-sm leading-6 text-zinc-500">
-                  Выберите товары, которые должны отображаться при клике по рубрике.
+                  Товары можно добавить сейчас или позже. Пустая рубрика сохранится в админке, но не появится на сайте.
                 </p>
               </div>
             </div>
@@ -247,7 +247,7 @@
                     Добавлено товаров: {{ selectedProductIds.length }}
                   </p>
                   <p class="mt-1 text-xs leading-5 text-zinc-500">
-                    Создайте строку, затем найдите товар по названию или артикулу.
+                    Необязательно. Создайте строку, затем найдите товар по названию или артикулу.
                   </p>
                 </div>
                 <div class="flex flex-wrap gap-2">
@@ -324,7 +324,7 @@
                   <span class="mx-auto grid size-11 place-items-center rounded-full bg-yellow-50 text-yellow-700">
                     <Plus class="size-5" />
                   </span>
-                  <span>Нажмите «Добавить товар», чтобы создать поле выбора</span>
+                  <span>Оставьте рубрику пустой или нажмите «Добавить товар»</span>
                 </span>
               </div>
             </div>

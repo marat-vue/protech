@@ -83,6 +83,10 @@ export default defineEventHandler(async (event) => {
 });
 
 async function assertProductsExist(productIds: number[]) {
+  if (productIds.length === 0) {
+    return;
+  }
+
   const count = await prisma.product.count({
     where: {
       id: {

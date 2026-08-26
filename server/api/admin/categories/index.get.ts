@@ -5,9 +5,11 @@ export default defineEventHandler(async (event) => {
     select: {
       id: true,
       name: true,
+      sortOrder: true,
     },
-    orderBy: {
-      name: "asc",
-    },
+    orderBy: [
+      { sortOrder: "asc" },
+      { id: "asc" },
+    ],
   });
 });

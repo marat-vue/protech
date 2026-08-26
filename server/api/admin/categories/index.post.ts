@@ -7,8 +7,23 @@ export default defineEventHandler(async (event) => {
   const body = await validateBody(event, categorySchema);
 
   try {
-    const category = await prisma.category.create({
-      data: { name: body.name }
+    const category = await prisma.$transaction(async (tx) => {
+      const lastCategory = await tx.category.findFirst({
+        orderBy: [
+          { sortOrder: "desc" },
+          { id: "desc" }
+        ],
+        select: {
+          sortOrder: true
+        }
+      });
+
+      return await tx.category.create({
+        data: {
+          name: body.name,
+          sortOrder: (lastCategory?.sortOrder ?? -1) + 1
+        }
+      });
     });
 
     await recordAdminAudit({
